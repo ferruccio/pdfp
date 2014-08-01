@@ -3,7 +3,6 @@
 
 Vagrant::Config.run do |config|
   config.vm.box = "ubuntu/trusty64"
-  #config.vm.box_url = "http://files.vagrantup.com/lucid64.box"
   config.vm.provision :shell, :path => "provision.sh"
 end
 
