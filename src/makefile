@@ -1,6 +1,15 @@
+CPP = clang++
 CCOPTS = -std=c++1y -stdlib=libc++
-SRC = dump.cpp pdfp.cpp lexer.cpp
+OBJ = pdfp.o lexer.o
 HDR = pdfp.hpp tools.hpp lexer.hpp
 
-dump:	$(SRC) $(HDR)
-	clang++ $(CCOPTS) $(SRC) -o dump
+pdfp.a:	$(OBJ)
+	ar cr pdfp.a $(OBJ)
+	mkdir -p ../bin
+	cp pdfp.a ../bin
+
+%.o: %.cpp
+	$(CPP) $(CCOPTS) -c -o $@ $^
+
+clean:
+	rm *.o *.a
