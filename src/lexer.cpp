@@ -45,10 +45,6 @@ namespace {
         }
     }
 
-    auto iskeywordchar(char ch) noexcept -> bool {
-        return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
-    }
-
     auto skipws(slice src) noexcept -> slice {
         while (!src.empty() && iswhitespace(*src))
             src = src.rest();
@@ -99,7 +95,7 @@ namespace {
     }
 
     auto keyword(slice src) noexcept -> tuple<token, slice> {
-        auto tok = src.take_while(iskeywordchar);
+        auto tok = src.take_until(iswhitespace);
         return tok.length() == 0
             ? make_tuple(token(token_type::bad_token, src), src)
             : make_tuple(token(token_type::keyword, tok), src.skip(tok.length()));

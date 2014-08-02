@@ -80,6 +80,20 @@ namespace pdf { namespace tools {
             return slice(p, end());
         }
 
+        auto skip_while(std::function<auto (char)->bool> pred) const noexcept -> slice {
+            auto p = begin();
+            while (p != end() && pred(*p))
+                ++p;
+            return slice(p, end());
+        }
+
+        auto take_until(std::function<auto (char)->bool> pred) const noexcept -> slice {
+            auto p = begin();
+            while (p != end() && !pred(*p))
+                ++p;
+            return slice(begin(), p);
+        }
+
         auto take_while(std::function<auto (char)->bool> pred) const noexcept -> slice {
             auto p = begin();
             while (p != end() && pred(*p))
