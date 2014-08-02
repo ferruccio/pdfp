@@ -57,7 +57,7 @@ namespace {
 
     auto number(slice src) noexcept -> std::tuple<token, slice> {
         auto tok = src.take_while(isnumberchar);
-        return make_tuple(token(token_type::name, tok), src.skip(tok.length()));
+        return make_tuple(token(token_type::number, tok), src.skip(tok.length()));
     }
 
     auto string(slice src) noexcept -> std::tuple<token, slice> {
@@ -69,7 +69,7 @@ namespace {
                 case ')': return --nesting == 0;
             }
         });
-        return make_tuple(token(token_type::name, tok), src.skip(tok.length()));
+        return make_tuple(token(token_type::string, tok), src.skip(tok.length()));
     }
 
 }
