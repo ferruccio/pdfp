@@ -10,7 +10,8 @@ namespace pdf {
     using tools::slice;
 
     enum class token_type {
-        nothing, keyword, name, string, hexstring, number,
+        nothing, bad_token,
+        keyword, name, string, hexstring, number,
         array_begin, array_end, dict_begin, dict_end
     };
 

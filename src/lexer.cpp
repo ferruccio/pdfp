@@ -9,6 +9,7 @@ namespace {
     using pdf::token_type;
     using pdf::tools::slice;
     using std::make_tuple;
+    using std::tuple;
 
     auto iswhitespace(char ch) noexcept -> bool {
         switch (ch) {
@@ -44,23 +45,27 @@ namespace {
         }
     }
 
-    auto skipws(pdf::slice src) noexcept -> pdf::slice {
+    auto iskeywordchar(char ch) noexcept -> bool {
+        return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
+    }
+
+    auto skipws(slice src) noexcept -> slice {
         while (!src.empty() && iswhitespace(*src))
             src = src.rest();
         return src;
     }
 
-    auto name(slice src) noexcept -> std::tuple<token, slice> {
+    auto name(slice src) noexcept -> tuple<token, slice> {
         auto tok = src.take_while(isnamechar);
         return make_tuple(token(token_type::name, tok), src.skip(tok.length()));
     }
 
-    auto number(slice src) noexcept -> std::tuple<token, slice> {
+    auto number(slice src) noexcept -> tuple<token, slice> {
         auto tok = src.take_while(isnumberchar);
         return make_tuple(token(token_type::number, tok), src.skip(tok.length()));
     }
 
-    auto string(slice src) noexcept -> std::tuple<token, slice> {
+    auto string(slice src) noexcept -> tuple<token, slice> {
         unsigned int nesting = 0;
         auto tok = src.take_while([&nesting](char ch)->bool {
             switch (ch) {
@@ -72,6 +77,34 @@ namespace {
         return make_tuple(token(token_type::string, tok), src.skip(tok.length()));
     }
 
+    auto lbrack(slice src) noexcept -> tuple<token, slice> {
+        auto src0 = src.rest();
+        if (src0.empty())
+            return make_tuple(token(token_type::bad_token, src), src);
+        if (*src0 == '<')
+            return make_tuple(token(token_type::dict_begin, src.left(2)), src0.rest());
+        auto tok = src.take_while([](char ch)->bool { return ch != '>'; });
+        return make_tuple(token(token_type::hexstring, tok), src.skip(tok.length()));
+    }
+
+    auto rbrack(slice src) noexcept -> tuple<token, slice> {
+        auto src0 = src.rest();
+        return src0.empty() || *src0 != '>'
+            ? make_tuple(token(token_type::bad_token, src), src)
+            : make_tuple(token(token_type::dict_end, src.left(2)), src0.rest());
+    }
+
+    auto single_char(slice src, token_type type) noexcept -> tuple<token, slice> {
+        return make_tuple(token(type, src.left(1)), src.rest());
+    }
+
+    auto keyword(slice src) noexcept -> tuple<token, slice> {
+        auto tok = src.take_while(iskeywordchar);
+        return tok.length() == 0
+            ? make_tuple(token(token_type::bad_token, src), src)
+            : make_tuple(token(token_type::keyword, tok), src.skip(tok.length()));
+    }
+
 }
 
 //
@@ -81,8 +114,9 @@ namespace {
 namespace pdf {
 
     using std::make_tuple;
+    using std::tuple;
 
-    auto next_token(slice src) noexcept -> std::tuple<token, slice> {
+    auto next_token(slice src) noexcept -> tuple<token, slice> {
         for (;;) {
             if ((src = skipws(src)).empty())
                 return make_tuple(token(token_type::nothing, src), src);
@@ -97,6 +131,11 @@ namespace pdf {
             case '5': case '6': case '7': case '8': case '9':
             case '+': case '-': case '.': return number(src);
             case '(': return string(src);
+            case '<': return lbrack(src);
+            case '>': return rbrack(src);
+            case '[': return single_char(src, token_type::array_begin);
+            case ']': return single_char(src, token_type::array_end);
+            default: return keyword(src);
         }
         return make_tuple(token(token_type::string, src), src);
     }
