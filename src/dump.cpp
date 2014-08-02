@@ -25,7 +25,11 @@ int main(int argc, char **argv) {
     auto pdf = read_file(argv[1]);
     cout << argv[1] << ": " << pdf.size() << " bytes read" << endl;
 
-    auto pp = pdf::make_pdf_parser(&*begin(pdf), &*end(pdf));
+    try {
+        auto pp = pdf::make_pdf_parser(pdf.data(), pdf.data() + pdf.size());
+    } catch (pdf::pdf_error& ex) {
+        cout << ex.what() << endl;
+    }
 
     return 0;
 }

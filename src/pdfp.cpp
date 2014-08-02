@@ -9,7 +9,11 @@ namespace pdf {
 
     class PdfParser : public IPdfParser {
     public:
-        PdfParser(slice pdf) : pdf(pdf) {}
+        PdfParser(slice pdf) : pdf(pdf) {
+            if (!pdf.starts_with("%PDF-1."))
+                throw pdf_error("no pdf header");
+        }
+
         ~PdfParser() {}
 
     private:

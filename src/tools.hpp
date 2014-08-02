@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
+#include <functional>
 #include <unordered_map>
 #include <stdexcept>
 #include <string>
@@ -11,11 +12,11 @@
 namespace pdf { namespace tools {
 
     /*
-        A slice is a non-owning reference to a block of chars.
+        A slice is a non-owning immutable reference to a block of chars.
     */
     class slice {
     public:
-        using cptr = char const * const;
+        using cptr = const char*;
 
         slice(const char* str) : _begin(str), _end(str + std::strlen(str)) {}
 
@@ -53,6 +54,8 @@ namespace pdf { namespace tools {
             return !(*this == rhs);
         }
 
+        auto operator*() const noexcept -> char { return *_begin; }
+
         auto first() const -> char {
             if (empty()) throw std::runtime_error("pdf::tools::slice::first() - empty slice");
             return *_begin;
@@ -64,6 +67,24 @@ namespace pdf { namespace tools {
 
         auto starts_with(slice s) const noexcept -> bool {
             return left(s.length()) == s;
+        }
+
+        auto skip(unsigned int n) const noexcept -> slice {
+            return slice(begin() + std::min(n, length()), end());
+        }
+
+        auto skip_until(std::function<auto (char)->bool> pred) const noexcept -> slice {
+            auto p = begin();
+            while (p != end() && !pred(*p))
+                ++p;
+            return slice(p, end());
+        }
+
+        auto take_while(std::function<auto (char)->bool> pred) const noexcept -> slice {
+            auto p = begin();
+            while (p != end() && pred(*p))
+                ++p;
+            return slice(begin(), p);
         }
 
     private:
