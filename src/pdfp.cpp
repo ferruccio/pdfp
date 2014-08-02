@@ -9,15 +9,15 @@ namespace pdf {
 
     class PdfParser : public IPdfParser {
     public:
-        PdfParser(slice<char> pdf) : pdf(pdf) {}
+        PdfParser(slice pdf) : pdf(pdf) {}
         ~PdfParser() {}
 
     private:
-        slice<char> pdf;
+        slice pdf;
     };
 
     auto make_pdf_parser(const char* begin, const char* end) -> std::unique_ptr<IPdfParser> {
-        return std::make_unique<PdfParser>(slice<char>(begin, end));
+        return std::make_unique<PdfParser>(slice(begin, end));
     }
 
 }

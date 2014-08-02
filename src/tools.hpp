@@ -10,73 +10,65 @@
 
 namespace pdf { namespace tools {
 
-    using length_type = unsigned int;
-
     /*
-        A slice is a non-owning reference to a block of contiguous objects.
+        A slice is a non-owning reference to a block of chars.
     */
-    template <typename T>
     class slice {
     public:
-        using cptr = T const * const;
+        using cptr = char const * const;
 
-        slice<T>(cptr data, length_type length) : _data(data), _length(length) {
-            assert(data != nullptr);
-        }
+        slice(const char* str) : _begin(str), _end(str + std::strlen(str)) {}
 
-        slice<T>(cptr begin, cptr end) : _data(begin), _length(end - begin) {
+        slice(cptr begin, cptr end) : _begin(begin), _end(end) {
             assert(begin != nullptr);
             assert(end != nullptr);
-            assert(begin <= end);
         }
 
-        slice<T>(const slice<T>& src) : _data(src.data()), _length(src.length()) {}
-
-        auto data() const noexcept -> cptr { return _data; }
-        auto length() const noexcept -> length_type { return _length; }
-        auto empty() const noexcept -> bool { return length() == 0; }
-
-        auto left(length_type length) const noexcept -> slice<T> {
-            return slice<T>(_data, std::min(_length, length));
+        slice(cptr begin, unsigned int length) : _begin(begin), _end(begin + length) {
+            assert(begin != nullptr);
         }
 
-        auto remove_left(length_type length) const noexcept -> slice<T> {
-            length = std::min(_length, length);
-            return slice<T>(_data + length, _length - length);
+        slice(const slice& src) : _begin(src.begin()), _end(src.end()) {}
+
+        auto begin() const noexcept -> cptr { return _begin; }
+        auto end() const noexcept -> cptr { return _end; }
+        auto length() const noexcept -> unsigned int { return _end - _begin; }
+        auto empty() const noexcept -> bool { return _begin == _end; }
+
+        auto left(unsigned int length) const noexcept -> slice {
+            return slice(_begin, _begin + std::min(this->length(), length));
         }
 
-        auto operator==(const slice<T>& rhs) const noexcept -> bool {
+        auto remove_left(unsigned int length) const noexcept -> slice {
+            return slice(_begin + std::min(this->length(), length), _end);
+        }
+
+        auto operator==(const slice& rhs) const noexcept -> bool {
             if (length() != rhs.length()) return false;
-            if (data() == rhs.data()) return true;
-            const auto end = data() + length();
-            return std::mismatch(data(), end, rhs.data()).first == end;
+            if (begin() == rhs.begin()) return true;
+            return std::mismatch(_begin, _end, rhs.begin()).first == _end;
         }
 
-        auto operator!=(const slice<T>& rhs) const noexcept -> bool {
+        auto operator!=(const slice& rhs) const noexcept -> bool {
             return !(*this == rhs);
         }
 
-        auto first() const -> T {
+        auto first() const -> char {
             if (empty()) throw std::runtime_error("pdf::tools::slice::first() - empty slice");
-            return data()[0];
+            return *_begin;
         }
 
-        auto rest() const noexcept -> slice<T> {
-            return empty() ? *this : slice<T>(data() + 1, length() - 1);
+        auto rest() const noexcept -> slice {
+            return empty() ? *this : slice(_begin + 1, _end);
         }
 
-        auto starts_with(slice<T> s) const noexcept -> bool {
+        auto starts_with(slice s) const noexcept -> bool {
             return left(s.length()) == s;
         }
 
     private:
-        cptr _data;
-        const length_type _length;
-    };
-
-    class char_slice : public slice<char> {
-    public:
-        char_slice(const char* str) : slice<char>(str, std::strlen(str)) {}
+        cptr _begin;
+        cptr _end;
     };
 
     /*
