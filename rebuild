@@ -1,0 +1,31 @@
+#!/bin/bash
+
+pushd /vagrant >/dev/null
+
+printf "\n----------\n"
+printf "building src..."
+printf "\n----------\n"
+pushd src >/dev/null
+make clean
+make
+sleep 1
+popd >/dev/null
+
+printf "\n----------\n"
+printf "building tools/dump..."
+printf "\n----------\n"
+pushd tools/dump >/dev/null
+make clean
+make
+popd >/dev/null
+
+printf "\n----------\n"
+printf "building tests..."
+printf "\n----------\n"
+pushd tests >/dev/null
+make clean
+make
+../bin/tests
+popd >/dev/null
+
+popd >/dev/null

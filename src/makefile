@@ -2,14 +2,14 @@ include ../make.inc
 
 OBJ = pdfp.o lexer.o
 HDR = pdfp.hpp tools.hpp lexer.hpp
+TGT = ../bin/pdfp.a
 
-pdfp.a:	$(OBJ)
-	ar cr pdfp.a $(OBJ)
+$(TGT):	$(OBJ)
 	mkdir -p ../bin
-	cp pdfp.a ../bin
+	ar cr $(TGT) $(OBJ)
 
 %.o: %.cpp
 	$(CPP) $(CCOPTS) -c -o $@ $^
 
 clean:
-	rm *.o *.a
+	rm *.o $(TGT)

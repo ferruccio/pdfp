@@ -11,4 +11,4 @@ $(TGT): $(OBJ)
 	$(CPP) $(CCOPTS) -I ../src -c -o $@ $^
 
 clean:
-	rm *.o
+	rm *.o $(TGT)
