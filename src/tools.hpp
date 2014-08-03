@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstring>
 #include <functional>
+#include <ostream>
 #include <unordered_map>
 #include <stdexcept>
 #include <string>
@@ -12,7 +13,7 @@
 namespace pdf { namespace tools {
 
     /*
-        A slice is a non-owning immutable reference to a block of chars.
+        A slice is a non-owning immutable reference to a sequence of chars.
     */
     class slice {
     public:
@@ -105,6 +106,12 @@ namespace pdf { namespace tools {
         cptr _begin;
         cptr _end;
     };
+
+    auto operator<<(std::ostream& os, slice s) -> std::ostream& {
+        for (char c : s)
+            os << c;
+        return os;
+    }
 
     /*
         An atom table provides a unique mapping from strings to simple tokens (atom_type).
