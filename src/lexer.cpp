@@ -28,15 +28,15 @@ namespace {
         }
     }
 
+    auto isbreak(char ch) noexcept -> bool {
+        return iswhitespace(ch) || isdelimiter(ch);
+    }
+
     auto iseol(char ch) noexcept -> bool {
         return ch == 0x0a || ch == 0x0d;
     }
 
-    auto isnamechar(char ch) noexcept -> bool {
-        return !iswhitespace(ch) && !isdelimiter(ch);
-    }
-
-    auto isnumberchar(char ch) noexcept -> bool {
+    auto isnumeric(char ch) noexcept -> bool {
         switch (ch) {
             case '0': case '1': case '2': case '3': case '4':
             case '5': case '6': case '7': case '8': case '9':
@@ -52,25 +52,25 @@ namespace {
     }
 
     auto name(slice src) noexcept -> tuple<token, slice> {
-        auto tok = src.take_while(isnamechar);
+        auto tok = src.take_until(isbreak);
         return make_tuple(token(token_type::name, tok), src.skip(tok.length()));
     }
 
     auto number(slice src) noexcept -> tuple<token, slice> {
-        auto tok = src.take_while(isnumberchar);
+        auto tok = src.take_while(isnumeric);
         return make_tuple(token(token_type::number, tok), src.skip(tok.length()));
     }
 
     auto string(slice src) noexcept -> tuple<token, slice> {
         unsigned int nesting = 0;
-        auto tok = src.take_while([&nesting](char ch)->bool {
+        auto tok = src.take_until([&nesting](char ch)->bool {
             switch (ch) {
                 case '(': ++nesting; // fall through
                 default: return false;
                 case ')': return --nesting == 0;
             }
         });
-        return make_tuple(token(token_type::string, tok), src.skip(tok.length()));
+        return make_tuple(token(token_type::string, tok.rest()), src.skip(tok.length() + 1));
     }
 
     auto lbrack(slice src) noexcept -> tuple<token, slice> {
@@ -79,8 +79,8 @@ namespace {
             return make_tuple(token(token_type::bad_token, src), src);
         if (*src0 == '<')
             return make_tuple(token(token_type::dict_begin, src.left(2)), src0.rest());
-        auto tok = src.take_while([](char ch)->bool { return ch != '>'; });
-        return make_tuple(token(token_type::hexstring, tok), src.skip(tok.length()));
+        auto tok = src.take_until([](char ch)->bool { return ch == '>'; });
+        return make_tuple(token(token_type::hexstring, tok.rest()), src.skip(tok.length() + 1));
     }
 
     auto rbrack(slice src) noexcept -> tuple<token, slice> {
@@ -95,7 +95,7 @@ namespace {
     }
 
     auto keyword(slice src) noexcept -> tuple<token, slice> {
-        auto tok = src.take_until(iswhitespace);
+        auto tok = src.take_until(isbreak);
         return tok.length() == 0
             ? make_tuple(token(token_type::bad_token, src), src)
             : make_tuple(token(token_type::keyword, tok), src.skip(tok.length()));
@@ -111,6 +111,24 @@ namespace pdf {
 
     using std::make_tuple;
     using std::tuple;
+
+    auto operator<<(std::ostream& os, token_type tt) noexcept -> std::ostream& {
+        switch (tt) {
+            case token_type::nothing: os << "nothing"; break;
+            case token_type::bad_token: os << "bad_token"; break;
+            case token_type::keyword: os << "keyword"; break;
+            case token_type::name: os << "name"; break;
+            case token_type::string: os << "string"; break;
+            case token_type::hexstring: os << "hexstring"; break;
+            case token_type::number: os << "number"; break;
+            case token_type::array_begin: os << "array_begin"; break;
+            case token_type::array_end: os << "array_end"; break;
+            case token_type::dict_begin: os << "dict_begin"; break;
+            case token_type::dict_end: os << "dict_end"; break;
+            default: os << "???"; break;
+        }
+        return os;
+    }
 
     auto next_token(slice src) noexcept -> tuple<token, slice> {
         for (;;) {

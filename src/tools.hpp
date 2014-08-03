@@ -107,7 +107,7 @@ namespace pdf { namespace tools {
         cptr _end;
     };
 
-    auto operator<<(std::ostream& os, slice s) -> std::ostream& {
+    inline auto operator<<(std::ostream& os, slice s) -> std::ostream& {
         for (char c : s)
             os << c;
         return os;

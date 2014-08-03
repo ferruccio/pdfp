@@ -1,6 +1,7 @@
 #ifndef LEXER_HPP
 #define LEXER_HPP
 
+#include <ostream>
 #include <tuple>
 
 #include "tools.hpp"
@@ -15,11 +16,19 @@ namespace pdf {
         array_begin, array_end, dict_begin, dict_end
     };
 
-    struct token {
-        token(token_type type, slice value) : type(type), value(value) {}
+    auto operator<<(std::ostream& os, token_type tt) noexcept -> std::ostream&;
 
-        const token_type type;
-        const slice value;
+    class token {
+    public:
+        token() : _type(token_type::nothing), _value(slice("")) {}
+        token(token_type type, slice value) : _type(type), _value(value) {}
+
+        auto type() const noexcept -> token_type { return _type; }
+        auto value() const noexcept -> slice { return _value; }
+
+    private:
+        token_type _type;
+        slice _value;
     };
 
     // Return the first token in a slice and the remainder of the slice.

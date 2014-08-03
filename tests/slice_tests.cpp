@@ -5,15 +5,18 @@ using pdf::tools::slice;
 
 TEST_CASE("slice: constructors", "[slice]") {
     slice a("");
+    CHECK(a == "");
     CHECK(a.empty());
     CHECK(a.length() == 0);
 
     slice b(".");
+    CHECK(b == ".");
     CHECK(!b.empty());
     CHECK(b.length() == 1);
     CHECK(*b == '.');
 
     slice c("xyzzy", 3);
+    CHECK(c == "xyz");
     CHECK(!c.empty());
     CHECK(c.length() == 3);
     CHECK(c == slice("xyz"));
@@ -22,37 +25,37 @@ TEST_CASE("slice: constructors", "[slice]") {
 
 TEST_CASE("slice: left", "[slice]") {
     slice s("xyzzy");
-    CHECK(s.left(0) == slice(""));
-    CHECK(s.left(1) == slice("x"));
-    CHECK(s.left(2) == slice("xy"));
-    CHECK(s.left(3) == slice("xyz"));
-    CHECK(s.left(4) == slice("xyzz"));
-    CHECK(s.left(5) == slice("xyzzy"));
-    CHECK(s.left(6) == slice("xyzzy"));
+    CHECK(s.left(0) == "");
+    CHECK(s.left(1) == "x");
+    CHECK(s.left(2) == "xy");
+    CHECK(s.left(3) == "xyz");
+    CHECK(s.left(4) == "xyzz");
+    CHECK(s.left(5) == "xyzzy");
+    CHECK(s.left(6) == "xyzzy");
 }
 
 TEST_CASE("slice: remove_left", "[slice]") {
     slice s("xyzzy");
-    CHECK(s.remove_left(0) == slice("xyzzy"));
-    CHECK(s.remove_left(1) == slice("yzzy"));
-    CHECK(s.remove_left(2) == slice("zzy"));
-    CHECK(s.remove_left(3) == slice("zy"));
-    CHECK(s.remove_left(4) == slice("y"));
-    CHECK(s.remove_left(5) == slice(""));
-    CHECK(s.remove_left(6) == slice(""));
+    CHECK(s.remove_left(0) == "xyzzy");
+    CHECK(s.remove_left(1) == "yzzy");
+    CHECK(s.remove_left(2) == "zzy");
+    CHECK(s.remove_left(3) == "zy");
+    CHECK(s.remove_left(4) == "y");
+    CHECK(s.remove_left(5) == "");
+    CHECK(s.remove_left(6) == "");
 }
 
-TEST_CASE("slice: operator=", "[slice]") {
-    CHECK(slice("") == slice(""));
-    CHECK(slice("a") == slice("a"));
-    CHECK(slice("xyzzy") == slice("xyzzy"));
+TEST_CASE("slice: operator==", "[slice]") {
+    CHECK(slice("") == "");
+    CHECK(slice("a") == "a");
+    CHECK(slice("xyzzy") == "xyzzy");
 }
 
 TEST_CASE("slice: operator!=", "[slice]") {
-    CHECK(slice("") != slice("."));
-    CHECK(slice("xyz") != slice("xy"));
-    CHECK(slice("xy") != slice("xyz"));
-    CHECK(slice("xyzzy") != slice("XYZZY"));
+    CHECK(slice("") != ".");
+    CHECK(slice("xyz") != "xy");
+    CHECK(slice("xy") != "xyz");
+    CHECK(slice("xyzzy") != "XYZZY");
 }
 
 TEST_CASE("slice: operator*", "[slice]") {
@@ -67,12 +70,12 @@ TEST_CASE("slice: first", "[slice]") {
 }
 
 TEST_CASE("slice: rest", "[slice]") {
-    CHECK(slice("").rest() == slice(""));
-    CHECK(slice("x").rest() == slice(""));
-    CHECK(slice("xy").rest() == slice("y"));
-    CHECK(slice("xyz").rest() == slice("yz"));
-    CHECK(slice("xyzz").rest() == slice("yzz"));
-    CHECK(slice("xyzzy").rest() == slice("yzzy"));
+    CHECK(slice("").rest() == "");
+    CHECK(slice("x").rest() == "");
+    CHECK(slice("xy").rest() == "y");
+    CHECK(slice("xyz").rest() == "yz");
+    CHECK(slice("xyzz").rest() == "yzz");
+    CHECK(slice("xyzzy").rest() == "yzzy");
 }
 
 TEST_CASE("slice: starts_with", "[slice]") {
@@ -87,15 +90,15 @@ TEST_CASE("slice: starts_with", "[slice]") {
 }
 
 TEST_CASE("slice: skip", "[slice]") {
-    CHECK(slice("").skip(0) == slice(""));
-    CHECK(slice("").skip(1) == slice(""));
-    CHECK(slice("xyzzy").skip(0) == slice("xyzzy"));
-    CHECK(slice("xyzzy").skip(1) == slice("yzzy"));
-    CHECK(slice("xyzzy").skip(2) == slice("zzy"));
-    CHECK(slice("xyzzy").skip(3) == slice("zy"));
-    CHECK(slice("xyzzy").skip(4) == slice("y"));
-    CHECK(slice("xyzzy").skip(5) == slice(""));
-    CHECK(slice("xyzzy").skip(6) == slice(""));
+    CHECK(slice("").skip(0) == "");
+    CHECK(slice("").skip(1) == "");
+    CHECK(slice("xyzzy").skip(0) == "xyzzy");
+    CHECK(slice("xyzzy").skip(1) == "yzzy");
+    CHECK(slice("xyzzy").skip(2) == "zzy");
+    CHECK(slice("xyzzy").skip(3) == "zy");
+    CHECK(slice("xyzzy").skip(4) == "y");
+    CHECK(slice("xyzzy").skip(5) == "");
+    CHECK(slice("xyzzy").skip(6) == "");
 }
 
 namespace {
@@ -106,29 +109,29 @@ namespace {
 }
 
 TEST_CASE("slice: skip_until", "[slice]") {
-    CHECK(slice("xyzzy").skip_until(isz) == slice("zzy"));
-    CHECK(slice("xyzzy").skip_until(notz) == slice("xyzzy"));
-    CHECK(slice("xyzzy").skip_until(fail) == slice(""));
-    CHECK(slice("xyzzy").skip_until(succeed) == slice("xyzzy"));
+    CHECK(slice("xyzzy").skip_until(isz) == "zzy");
+    CHECK(slice("xyzzy").skip_until(notz) == "xyzzy");
+    CHECK(slice("xyzzy").skip_until(fail) == "");
+    CHECK(slice("xyzzy").skip_until(succeed) == "xyzzy");
 }
 
 TEST_CASE("slice: skip_while", "[slice]") {
-    CHECK(slice("xyzzy").skip_while(isz) == slice("xyzzy"));
-    CHECK(slice("xyzzy").skip_while(notz) == slice("zzy"));
-    CHECK(slice("xyzzy").skip_while(fail) == slice("xyzzy"));
-    CHECK(slice("xyzzy").skip_while(succeed) == slice(""));
+    CHECK(slice("xyzzy").skip_while(isz) == "xyzzy");
+    CHECK(slice("xyzzy").skip_while(notz) == "zzy");
+    CHECK(slice("xyzzy").skip_while(fail) == "xyzzy");
+    CHECK(slice("xyzzy").skip_while(succeed) == "");
 }
 
 TEST_CASE("slice: take_until", "[slice]") {
-    CHECK(slice("xyzzy").take_until(isz) == slice("xy"));
-    CHECK(slice("xyzzy").take_until(notz) == slice(""));
-    CHECK(slice("xyzzy").take_until(fail) == slice("xyzzy"));
-    CHECK(slice("xyzzy").take_until(succeed) == slice(""));
+    CHECK(slice("xyzzy").take_until(isz) == "xy");
+    CHECK(slice("xyzzy").take_until(notz) == "");
+    CHECK(slice("xyzzy").take_until(fail) == "xyzzy");
+    CHECK(slice("xyzzy").take_until(succeed) == "");
 }
 
 TEST_CASE("slice: take_while", "[slice]") {
-    CHECK(slice("xyzzy").take_while(isz) == slice(""));
-    CHECK(slice("xyzzy").take_while(notz) == slice("xy"));
-    CHECK(slice("xyzzy").take_while(fail) == slice(""));
-    CHECK(slice("xyzzy").take_while(succeed) == slice("xyzzy"));
+    CHECK(slice("xyzzy").take_while(isz) == "");
+    CHECK(slice("xyzzy").take_while(notz) == "xy");
+    CHECK(slice("xyzzy").take_while(fail) == "");
+    CHECK(slice("xyzzy").take_while(succeed) == "xyzzy");
 }

@@ -1,11 +1,11 @@
 include ../make.inc
 
-OBJ = tests.o slice_tests.o
+OBJ = tests.o slice_tests.o lexer_tests.o
 TGT = ../bin/tests
 
 $(TGT): $(OBJ)
 	mkdir -p ../../bin
-	$(CPP) $(CCOPTS) $(OBJ) -o $(TGT)
+	$(CPP) $(CCOPTS) $(OBJ) ../bin/pdfp.a -o $(TGT)
 
 %.o: %.cpp
 	$(CPP) $(CCOPTS) -I ../src -c -o $@ $^
