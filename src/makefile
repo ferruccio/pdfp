@@ -1,5 +1,5 @@
-CPP = clang++
-CCOPTS = -std=c++1y -stdlib=libc++
+include ../make.inc
+
 OBJ = pdfp.o lexer.o
 HDR = pdfp.hpp tools.hpp lexer.hpp
 

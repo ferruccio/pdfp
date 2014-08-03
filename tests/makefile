@@ -1,5 +1,5 @@
-CPP = clang++
-CCOPTS = -std=c++1y -stdlib=libc++ -I ../src
+include ../make.inc
+
 OBJ = tests.o slice_tests.o
 TGT = ../bin/tests
 
@@ -8,7 +8,7 @@ $(TGT): $(OBJ)
 	$(CPP) $(CCOPTS) $(OBJ) -o $(TGT)
 
 %.o: %.cpp
-	$(CPP) $(CCOPTS) -c -o $@ $^
+	$(CPP) $(CCOPTS) -I ../src -c -o $@ $^
 
 clean:
 	rm *.o

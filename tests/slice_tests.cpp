@@ -1,7 +1,7 @@
 #include "catch.hpp"
 #include "tools.hpp"
 
-using namespace pdf::tools;
+using pdf::tools::slice;
 
 TEST_CASE("slice: constructors", "[slice]") {
     slice a("");
