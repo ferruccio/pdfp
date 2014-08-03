@@ -6,8 +6,7 @@ printf "\n----------\n"
 printf "building src..."
 printf "\n----------\n"
 pushd src >/dev/null
-make clean
-make
+make -B
 sleep 1
 popd >/dev/null
 
@@ -15,16 +14,14 @@ printf "\n----------\n"
 printf "building tools/dump..."
 printf "\n----------\n"
 pushd tools/dump >/dev/null
-make clean
-make
+make -B
 popd >/dev/null
 
 printf "\n----------\n"
 printf "building tests..."
 printf "\n----------\n"
 pushd tests >/dev/null
-make clean
-make
+make -B
 ../bin/tests
 popd >/dev/null
 

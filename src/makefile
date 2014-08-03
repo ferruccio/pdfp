@@ -4,7 +4,7 @@ OBJ = pdfp.o lexer.o
 HDR = pdfp.hpp tools.hpp lexer.hpp
 TGT = ../bin/pdfp.a
 
-$(TGT):	$(OBJ)
+$(TGT):	$(OBJ) $(HDR)
 	mkdir -p ../bin
 	ar cr $(TGT) $(OBJ)
 

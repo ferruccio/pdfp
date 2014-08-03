@@ -8,7 +8,6 @@
 #include <ostream>
 #include <unordered_map>
 #include <stdexcept>
-#include <string>
 
 namespace pdf { namespace tools {
 
@@ -114,8 +113,10 @@ namespace pdf { namespace tools {
     }
 
     /*
-        An atom table provides a unique mapping from strings to simple tokens (atom_type).
-        It also provides support for strings with predefined values for tokens.
+        An atom table provides a unique mapping from slices to simple tokens (atom_type).
+        It also provides support for slices with predefined values for tokens.
+        Assumption: all slices stored in a atom table have longer lifetimes than
+        the atom table itself, otherwise bad things will happen...
     */
     using atom_type = unsigned int;
 
@@ -123,25 +124,34 @@ namespace pdf { namespace tools {
     public:
         atom_table(atom_type first = 0) : next(first) {}
 
-        auto add(const std::string& key) noexcept -> atom_type {
+        auto add(slice key) noexcept -> atom_type {
             auto value = table.find(key);
             return value != table.end() ? value->second : table[key] = next++;
         }
 
-        void add(const std::string& key, atom_type value) {
+        void add(slice key, atom_type value) {
             if (haskey(key)) throw std::runtime_error("pdf::tools::atom_table::add() - duplicate key");
             table[key] = value;
         }
 
-        auto operator[](const std::string& key) noexcept -> atom_type {
+        auto operator[](slice key) noexcept -> atom_type {
             return add(key);
         }
 
     private:
-        std::unordered_map<std::string, atom_type> table;
+        struct hash {
+            auto operator()(slice s) const noexcept -> std::size_t {
+                std::size_t hash = 0;
+                for (char c : s)
+                    hash = hash * 101 + c;
+                return hash;
+            }
+        };
+
+        std::unordered_map<slice, atom_type, hash> table;
         atom_type next;
 
-        auto haskey(const std::string& key) const noexcept -> bool {
+        auto haskey(slice key) const noexcept -> bool {
             return table.find(key) != table.end();
         }
     };

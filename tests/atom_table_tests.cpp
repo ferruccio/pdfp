@@ -11,6 +11,7 @@ TEST_CASE("atom_table: add", "[atom_table]") {
     CHECK(t.add("xyzzy") >= 0);
     CHECK(t.add("plugh") >= 0);
     CHECK(t.add("plover") >= 0);
+    CHECK_THROWS(t.add("plugh", 0));
 
     CHECK(t["xyzzy"] == t["xyzzy"]);
     CHECK(t["plugh"] == t["plugh"]);
