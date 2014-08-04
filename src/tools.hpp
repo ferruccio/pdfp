@@ -282,7 +282,42 @@ namespace pdf { namespace tools {
         auto is_array() const noexcept -> bool { return _type == variant_type::array; }
         auto is_dict() const noexcept -> bool { return _type == variant_type::dict; }
         auto is_numeric() const noexcept -> bool { return is_integer() || is_real(); }
-        auto is_string_type() const noexcept -> bool { return is_string() || is_hexstring(); }
+        auto is_text() const noexcept -> bool { return is_string() || is_hexstring(); }
+
+        auto get_keyword() const -> atom_type {
+            if (!is_keyword()) throw std::runtime_error("pdf::tools::variant: not a keyword");
+            return _var.atom;
+        }
+
+        auto get_name() const -> atom_type {
+            if (!is_name()) throw std::runtime_error("pdf::tools::variant: not a name");
+            return _var.atom;
+        }
+
+        auto get_boolean() const -> bool {
+            if (!is_boolean()) throw std::runtime_error("pdf::tools::variant: not a boolean");
+            return _var.bool_val;
+        }
+
+        auto get_integer() const -> int {
+            if (!is_integer()) throw std::runtime_error("pdf::tools::variant: not an integer");
+            return _var.int_val;
+        }
+
+        auto get_real() const -> double {
+            if (!is_real()) throw std::runtime_error("pdf::tools::variant: not a real");
+            return _var.real_val;
+        }
+
+        auto get_string() const -> slice {
+            if (!is_string()) throw std::runtime_error("pdf::tools::variant: not a string");
+            return _var.ref;
+        }
+
+        auto get_hexstring() const -> slice {
+            if (!is_hexstring()) throw std::runtime_error("pdf::tools::variant: not a hexstring");
+            return _var.ref;
+        }
 
         auto type() const noexcept -> variant_type { return _type; }
 
