@@ -151,7 +151,6 @@ namespace pdf {
             case ']': return single_char(src, token_type::array_end);
             default: return keyword(src);
         }
-        return make_tuple(token(token_type::string, src), src);
     }
 
 }
