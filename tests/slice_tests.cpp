@@ -135,3 +135,10 @@ TEST_CASE("slice: take_while", "[slice]") {
     CHECK(slice("xyzzy").take_while(fail) == "");
     CHECK(slice("xyzzy").take_while(succeed) == "xyzzy");
 }
+
+TEST_CASE("slice: find_last", "[slice]") {
+    CHECK(slice("hic haec hoc").find_last("huic").empty());
+    CHECK(slice("hic haec hoc").find_last("hoc") == "hoc");
+    CHECK(slice("hic haec hoc").find_last("haec") == "haec hoc");
+    CHECK(slice("hic haec hic hoc").find_last("hic") == "hic hoc");
+}

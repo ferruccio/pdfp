@@ -103,6 +103,13 @@ namespace pdf { namespace tools {
             return slice(begin(), p);
         }
 
+        auto find_last(slice what) const noexcept -> slice {
+            auto p = std::find_end(begin(), end(), what.begin(), what.end());
+            return p == end()
+                ? slice("")
+                : slice(p, end());
+        }
+
     private:
         cptr _begin;
         cptr _end;
