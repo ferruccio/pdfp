@@ -6,10 +6,12 @@
 #include <cstring>
 #include <functional>
 #include <initializer_list>
+#include <map>
 #include <ostream>
 #include <unordered_map>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace pdf { namespace tools {
 
@@ -168,6 +170,152 @@ namespace pdf { namespace tools {
         auto haskey(slice key) const noexcept -> bool {
             return table.find(key) != table.end();
         }
+    };
+
+    enum class variant_type {
+        null, keyword, boolean, integer, real, name, string, hexstring, array, dict
+    };
+
+    //
+    //  variants are used to hold any PDF item
+    //
+    class variant {
+    public:
+        variant() : _type(variant_type::null) {}
+        ~variant() { nullify(); }
+
+        variant(const variant& rhs) { *this = rhs; }
+
+        variant(variant&& rhs) {
+            nullify();
+            switch (rhs.type()) {
+                case variant_type::null: break;
+                case variant_type::keyword: // fall through
+                case variant_type::name: _var.atom = rhs._var.atom; break;
+                case variant_type::boolean: _var.bool_val = rhs._var.bool_val; break;
+                case variant_type::integer: _var.int_val = rhs._var.int_val; break;
+                case variant_type::real: _var.real_val = rhs._var.real_val; break;
+                case variant_type::string: // fall through
+                case variant_type::hexstring: _var.ref = rhs._var.ref; break;
+                // move
+                case variant_type::array:
+                    _var.array = rhs._var.array;
+                    rhs._var.array = nullptr;
+                    rhs._type = variant_type::null;
+                    break;
+                case variant_type::dict:
+                    _var.dict = rhs._var.dict;
+                    rhs._var.dict = nullptr;
+                    rhs._type = variant_type::null;
+                    break;
+            }
+        }
+
+        auto operator=(const variant& rhs) noexcept -> variant& {
+            nullify();
+            switch (rhs.type()) {
+                case variant_type::null: break;
+                case variant_type::keyword: // fall through
+                case variant_type::name: _var.atom = rhs._var.atom; break;
+                case variant_type::boolean: _var.bool_val = rhs._var.bool_val; break;
+                case variant_type::integer: _var.int_val = rhs._var.int_val; break;
+                case variant_type::real: _var.real_val = rhs._var.real_val; break;
+                case variant_type::string: // fall through
+                case variant_type::hexstring: _var.ref = rhs._var.ref; break;
+                // copy
+                case variant_type::array:
+                    _var.array = new std::vector<variant>(rhs._var.array->size());
+                    _type = variant_type::array;
+                    std::copy(rhs._var.array->begin(), rhs._var.array->end(), _var.array->begin());
+                    break;
+                case variant_type::dict:
+                    _var.dict = new std::map<atom_type, variant>();
+                    _type = variant_type::dict;
+                    _var.dict->insert(rhs._var.dict->begin(), rhs._var.dict->end());
+                    break;
+            }
+            return *this;
+        }
+
+        static auto make_null() noexcept -> variant {
+            return variant(variant_type::null);
+        }
+
+        static auto make_keyword(atom_type keyword) noexcept -> variant {
+            return variant(keyword, variant_type::keyword);
+        }
+
+        static auto make_name(atom_type name) noexcept -> variant {
+            return variant(name, variant_type::name);
+        }
+
+        static auto make_boolean(bool value) noexcept -> variant {
+            return variant(value);
+        }
+
+        static auto make_integer(int value) noexcept -> variant {
+            return variant(value);
+        }
+
+        static auto make_real(double value) noexcept -> variant {
+            return variant(value);
+        }
+
+        static auto make_string(slice s) noexcept -> variant {
+            return variant(s, variant_type::string);
+        }
+
+        static auto make_hexstring(slice s) noexcept -> variant {
+            return variant(s, variant_type::hexstring);
+        }
+
+        static auto make_array() noexcept -> variant {
+            variant v(variant_type::array);
+            v._var.array = new std::vector<variant>();
+            return v;
+        }
+
+        static auto make_dict() noexcept -> variant {
+            variant v(variant_type::dict);
+            v._var.dict = new std::map<atom_type, variant>();
+            return v;
+        }
+
+        auto type() const noexcept -> variant_type { return _type; }
+
+    private:
+        variant(variant_type type) : _type(type) {}
+        variant(atom_type value, variant_type type) : _type(type) { _var.atom = value; }
+        variant(bool value) : _type(variant_type::boolean) { _var.bool_val = value; }
+        variant(int value) : _type(variant_type::integer) { _var.int_val = value; }
+        variant(double value) : _type(variant_type::real) { _var.real_val = value; }
+        variant(slice value, variant_type type) : _type(type) { _var.ref = value; }
+
+    private:
+        union var {
+            var() {}
+            ~var() {}
+
+            slice ref;
+            atom_type atom;
+            bool bool_val;
+            int int_val;
+            double real_val;
+            std::vector<variant>* array;
+            std::map<atom_type, variant>* dict;
+        };
+
+        void nullify() {
+            switch (type()) {
+                case variant_type::array: delete _var.array; break;
+                case variant_type::dict: delete _var.dict; break;
+                default: break;
+            }
+            _type = variant_type::null;
+        }
+
+        variant_type _type;
+        var _var;
     };
 
 }}
