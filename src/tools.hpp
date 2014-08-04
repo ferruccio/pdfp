@@ -286,6 +286,14 @@ namespace pdf { namespace tools {
 
         auto type() const noexcept -> variant_type { return _type; }
 
+        auto size() const noexcept -> std::size_t {
+            switch (type()) {
+                case variant_type::array: return _var.array->size();
+                case variant_type::dict: return _var.dict->size();
+                default: return 1;
+            }
+        }
+
     private:
         variant(variant_type type) : _type(type) {}
         variant(atom_type value, variant_type type) : _type(type) { _var.atom = value; }
