@@ -329,6 +329,18 @@ namespace pdf { namespace tools {
             }
         }
 
+        auto operator[](int index) const -> variant {
+            if (!is_array()) throw std::runtime_error("pdf::tools::variant: not an array");
+            if (index < 0 || index > _var.array->size())
+                throw std::runtime_error("pdf::tools::variant: bad array index");
+            return (*_var.array)[index];
+        }
+
+        auto operator[](atom_type key) const -> variant {
+            if (!is_dict()) throw std::runtime_error("pdf::tools::variant: not a dict");
+            return (*_var.dict)[key];
+        }
+
     private:
         variant(variant_type type) : _type(type) {}
         variant(atom_type value, variant_type type) : _type(type) { _var.atom = value; }
