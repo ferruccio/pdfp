@@ -117,11 +117,7 @@ namespace pdf { namespace tools {
         cptr _end;
     };
 
-    inline auto operator<<(std::ostream& os, slice s) -> std::ostream& {
-        for (char c : s)
-            os << c;
-        return os;
-    }
+    auto operator<<(std::ostream& os, slice s) -> std::ostream&;
 
     /*
         An atom table provides a unique mapping from slices to simple tokens (atom_type).
@@ -403,6 +399,8 @@ namespace pdf { namespace tools {
         variant_type _type;
         var _var;
     };
+
+    auto operator<<(std::ostream& os, variant v) -> std::ostream&;
 
 }}
 

@@ -1,6 +1,6 @@
 include ../make.inc
 
-OBJ = pdfp.o lexer.o
+OBJ = pdfp.o lexer.o tools.o
 HDR = pdfp.hpp tools.hpp lexer.hpp
 TGT = ../bin/pdfp.a
 
