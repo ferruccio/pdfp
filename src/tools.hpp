@@ -176,9 +176,9 @@ namespace pdf { namespace tools {
         null, keyword, boolean, integer, real, name, string, hexstring, array, dict
     };
 
-    //
-    //  variants are used to hold any PDF item
-    //
+    /*
+        variants are used to hold any PDF item
+    */
     class variant {
     public:
         variant() : _type(variant_type::null) {}
@@ -189,24 +189,20 @@ namespace pdf { namespace tools {
         variant(variant&& rhs) {
             nullify();
             switch (rhs.type()) {
-                case variant_type::null: break;
-                case variant_type::keyword: // fall through
-                case variant_type::name: _var.atom = rhs._var.atom; break;
-                case variant_type::boolean: _var.bool_val = rhs._var.bool_val; break;
-                case variant_type::integer: _var.int_val = rhs._var.int_val; break;
-                case variant_type::real: _var.real_val = rhs._var.real_val; break;
-                case variant_type::string: // fall through
-                case variant_type::hexstring: _var.ref = rhs._var.ref; break;
-                // move
                 case variant_type::array:
                     _var.array = rhs._var.array;
+                    _type = rhs._type;
                     rhs._var.array = nullptr;
                     rhs._type = variant_type::null;
                     break;
                 case variant_type::dict:
                     _var.dict = rhs._var.dict;
+                    _type = rhs._type;
                     rhs._var.dict = nullptr;
                     rhs._type = variant_type::null;
+                    break;
+                default:
+                    assign(rhs);
                     break;
             }
         }
@@ -214,15 +210,6 @@ namespace pdf { namespace tools {
         auto operator=(const variant& rhs) noexcept -> variant& {
             nullify();
             switch (rhs.type()) {
-                case variant_type::null: break;
-                case variant_type::keyword: // fall through
-                case variant_type::name: _var.atom = rhs._var.atom; break;
-                case variant_type::boolean: _var.bool_val = rhs._var.bool_val; break;
-                case variant_type::integer: _var.int_val = rhs._var.int_val; break;
-                case variant_type::real: _var.real_val = rhs._var.real_val; break;
-                case variant_type::string: // fall through
-                case variant_type::hexstring: _var.ref = rhs._var.ref; break;
-                // copy
                 case variant_type::array:
                     _var.array = new std::vector<variant>(rhs._var.array->size());
                     _type = variant_type::array;
@@ -232,6 +219,9 @@ namespace pdf { namespace tools {
                     _var.dict = new std::map<atom_type, variant>();
                     _type = variant_type::dict;
                     _var.dict->insert(rhs._var.dict->begin(), rhs._var.dict->end());
+                    break;
+                default:
+                    assign(rhs);
                     break;
             }
             return *this;
@@ -281,6 +271,19 @@ namespace pdf { namespace tools {
             return v;
         }
 
+        auto is_null() const noexcept -> bool { return _type == variant_type::null; }
+        auto is_keyword() const noexcept -> bool { return _type == variant_type::keyword; }
+        auto is_name() const noexcept -> bool { return _type == variant_type::name; }
+        auto is_boolean() const noexcept -> bool { return _type == variant_type::boolean; }
+        auto is_integer() const noexcept -> bool { return _type == variant_type::integer; }
+        auto is_real() const noexcept -> bool { return _type == variant_type::real; }
+        auto is_string() const noexcept -> bool { return _type == variant_type::string; }
+        auto is_hexstring() const noexcept -> bool { return _type == variant_type::hexstring; }
+        auto is_array() const noexcept -> bool { return _type == variant_type::array; }
+        auto is_dict() const noexcept -> bool { return _type == variant_type::dict; }
+        auto is_numeric() const noexcept -> bool { return is_integer() || is_real(); }
+        auto is_string_type() const noexcept -> bool { return is_string() || is_hexstring(); }
+
         auto type() const noexcept -> variant_type { return _type; }
 
     private:
@@ -312,6 +315,22 @@ namespace pdf { namespace tools {
                 default: break;
             }
             _type = variant_type::null;
+        }
+
+        void assign(const variant& rhs) {
+            switch (rhs.type()) {
+                case variant_type::null: break;
+                case variant_type::keyword: // fall through
+                case variant_type::name: _var.atom = rhs._var.atom; break;
+                case variant_type::boolean: _var.bool_val = rhs._var.bool_val; break;
+                case variant_type::integer: _var.int_val = rhs._var.int_val; break;
+                case variant_type::real: _var.real_val = rhs._var.real_val; break;
+                case variant_type::string: // fall through
+                case variant_type::hexstring: _var.ref = rhs._var.ref; break;
+                // does not handle complex types (array, dict)
+                default: return;
+            }
+            _type = rhs._type;
         }
 
         variant_type _type;
