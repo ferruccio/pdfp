@@ -56,3 +56,17 @@ TEST_CASE("atom_table: pre-defined", "[atom_table]") {
     CHECK(t["plugh"] == atom::plugh);
     CHECK(t["plover"] == atom::plover);
 }
+
+TEST_CASE("atom_table: initialized", "[atom_table]") {
+    enum atom : atom_type { xyzzy, plugh, plover };
+
+    atom_table t{
+        { "xyzzy", atom::xyzzy },
+        { "plugh", atom::plugh },
+        { "plover", atom::plover }
+    };
+
+    CHECK(t["xyzzy"] == atom::xyzzy);
+    CHECK(t["plugh"] == atom::plugh);
+    CHECK(t["plover"] == atom::plover);
+}

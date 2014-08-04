@@ -5,9 +5,11 @@
 #include <cassert>
 #include <cstring>
 #include <functional>
+#include <initializer_list>
 #include <ostream>
 #include <unordered_map>
 #include <stdexcept>
+#include <utility>
 
 namespace pdf { namespace tools {
 
@@ -123,6 +125,11 @@ namespace pdf { namespace tools {
     class atom_table {
     public:
         atom_table(atom_type first = 0) : next(first) {}
+
+        atom_table(std::initializer_list<std::pair<slice, atom_type>> init) {
+            for (auto kv : init)
+                add(kv.first, kv.second);
+        }
 
         auto add(slice key) noexcept -> atom_type {
             auto value = table.find(key);
