@@ -269,13 +269,13 @@ namespace pdf { namespace tools {
             return variant(s, variant_type::hexstring);
         }
 
-        static auto make_array() noexcept -> variant {
+        static auto make_array() -> variant {
             variant v(variant_type::array);
             v._var.array = new std::vector<variant>();
             return v;
         }
 
-        static auto make_dict() noexcept -> variant {
+        static auto make_dict() -> variant {
             variant v(variant_type::dict);
             v._var.dict = new std::map<atom_type, variant>();
             return v;
