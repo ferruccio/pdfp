@@ -181,6 +181,9 @@ namespace pdf { namespace tools {
     */
     class variant {
     public:
+        using array_type = std::vector<variant>;
+        using dict_type = std::map<atom_type, variant>;
+
         variant() : _type(variant_type::null) {}
         ~variant() { nullify(); }
 
@@ -211,12 +214,12 @@ namespace pdf { namespace tools {
             nullify();
             switch (rhs.type()) {
                 case variant_type::array:
-                    _var.array = new std::vector<variant>(rhs._var.array->size());
+                    _var.array = new array_type(rhs._var.array->size());
                     _type = variant_type::array;
                     std::copy(rhs._var.array->begin(), rhs._var.array->end(), _var.array->begin());
                     break;
                 case variant_type::dict:
-                    _var.dict = new std::map<atom_type, variant>();
+                    _var.dict = new dict_type();
                     _type = variant_type::dict;
                     _var.dict->insert(rhs._var.dict->begin(), rhs._var.dict->end());
                     break;
@@ -261,13 +264,13 @@ namespace pdf { namespace tools {
 
         static auto make_array() -> variant {
             variant v(variant_type::array);
-            v._var.array = new std::vector<variant>();
+            v._var.array = new array_type();
             return v;
         }
 
         static auto make_dict() -> variant {
             variant v(variant_type::dict);
-            v._var.dict = new std::map<atom_type, variant>();
+            v._var.dict = new dict_type();
             return v;
         }
 
@@ -319,6 +322,16 @@ namespace pdf { namespace tools {
             return _var.ref;
         }
 
+        auto get_array() const -> array_type& {
+            if (!is_array()) throw std::runtime_error("pdf::tools::variant: not an array");
+            return *_var.array;
+        }
+
+        auto get_dict() const -> dict_type& {
+            if (!is_dict()) throw std::runtime_error("pdf::tools::variant: not a dict");
+            return *_var.dict;
+        }
+
         auto type() const noexcept -> variant_type { return _type; }
 
         auto size() const noexcept -> std::size_t {
@@ -330,15 +343,14 @@ namespace pdf { namespace tools {
         }
 
         auto operator[](int index) const -> variant {
-            if (!is_array()) throw std::runtime_error("pdf::tools::variant: not an array");
-            if (index < 0 || index > _var.array->size())
+            auto array = get_array();
+            if (index < 0 || index > array.size())
                 throw std::runtime_error("pdf::tools::variant: bad array index");
-            return (*_var.array)[index];
+            return array[index];
         }
 
         auto operator[](atom_type key) const -> variant {
-            if (!is_dict()) throw std::runtime_error("pdf::tools::variant: not a dict");
-            return (*_var.dict)[key];
+            return get_dict()[key];
         }
 
     private:
@@ -359,8 +371,8 @@ namespace pdf { namespace tools {
             bool bool_val;
             int int_val;
             double real_val;
-            std::vector<variant>* array;
-            std::map<atom_type, variant>* dict;
+            array_type* array;
+            dict_type* dict;
         };
 
         void nullify() {
