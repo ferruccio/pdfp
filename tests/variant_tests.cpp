@@ -3,6 +3,7 @@
 
 using pdf::tools::slice;
 using pdf::tools::atom_type;
+using pdf::tools::atom_table;
 using pdf::tools::variant;
 
 #include <sstream>
@@ -176,4 +177,22 @@ TEST_CASE("variant: << array/dict", "[variant]") {
     stringstream ss;
     ss << v;
     CHECK(ss.str() == "[null @10 /20 false 3 2.5 (xyzzy) <deadbeef> [(xyzzy) 32 false] <</10 (plover) /11 3.5 /13 true>>]");
+}
+
+TEST_CASE("variant: << dict + atoms", "[variant]") {
+    atom_table t;
+    t.add("keyword");
+    t.add("Name");
+    t.add("Type");
+    t.add("Value");
+
+    auto v = variant::make_dict();
+    auto& d = v.get_dict();
+    d[t["Name"]] = variant::make_string("Charlie Brown");
+    d[t["Type"]] = variant::make_keyword(t["keyword"]);
+    d[t["Value"]] = variant::make_real(1.5);
+
+    stringstream ss;
+    ss << v(t);
+    CHECK(ss.str() == "<</Name (Charlie Brown) /Type keyword /Value 1.5>>");
 }

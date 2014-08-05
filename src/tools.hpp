@@ -150,6 +150,14 @@ namespace pdf { namespace tools {
             return add(key);
         }
 
+        // brute force reverse lookup: for debugging purposes only
+        auto lookup(atom_type value) const noexcept -> slice {
+            for (const auto& kv : table)
+                if (kv.second == value)
+                    return kv.first;
+            return "???";
+        }
+
     private:
         struct hash {
             auto operator()(slice s) const noexcept -> std::size_t {
@@ -175,6 +183,20 @@ namespace pdf { namespace tools {
     /*
         variants are used to hold any PDF item
     */
+    class variant;
+
+    /*
+        A variant_proxy is a temporary object used to associate a variant with an
+        atom_table so that operator<< can print textual names and keywords.
+        It's meant to be used for unit testing & debugging.
+    */
+    struct variant_proxy {
+        variant_proxy(const variant& var, const atom_table& atoms) : var(var), atoms(atoms) {}
+
+        const variant& var;
+        const atom_table& atoms;
+    };
+
     class variant {
     public:
         using array_type = std::vector<variant>;
@@ -204,6 +226,11 @@ namespace pdf { namespace tools {
                     assign(rhs);
                     break;
             }
+        }
+
+        // create a variant proxy bound to this variant and an atom_table
+        auto operator()(const atom_table& atoms) const noexcept -> variant_proxy {
+            return variant_proxy(*this, atoms);
         }
 
         auto operator=(const variant& rhs) noexcept -> variant& {
@@ -401,6 +428,7 @@ namespace pdf { namespace tools {
     };
 
     auto operator<<(std::ostream& os, variant v) -> std::ostream&;
+    auto operator<<(std::ostream& os, variant_proxy vp) -> std::ostream&;
 
 }}
 
