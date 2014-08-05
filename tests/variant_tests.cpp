@@ -108,6 +108,10 @@ TEST_CASE("variant: dicts", "[variant]") {
     CHECK(v[test::array].get_array().size() == 0);
     CHECK(v[test::dict].is_dict());
     CHECK(v[test::dict].get_dict().size() == 0);
+
+    CHECK(v.haskey(test::boolean));
+    CHECK(v.haskey(test::dict));
+    CHECK(!v.haskey(static_cast<atom_type>(100)));
 }
 
 TEST_CASE("variant: << simple", "[variant]") {

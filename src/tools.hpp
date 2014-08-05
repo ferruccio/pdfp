@@ -369,6 +369,11 @@ namespace pdf { namespace tools {
             }
         }
 
+        auto haskey(atom_type key) const -> bool {
+            if (!is_dict()) throw std::runtime_error("pdf::tools::variant: not a dict");
+            return (*_var.dict).find(key) != (*_var.dict).end();
+        }
+
         auto operator[](int index) const -> variant {
             auto array = get_array();
             if (index < 0 || index > array.size())
