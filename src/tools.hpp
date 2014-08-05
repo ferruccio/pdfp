@@ -129,11 +129,15 @@ namespace pdf { namespace tools {
 
     class atom_table {
     public:
-        atom_table(atom_type first = 0) : next(first) {}
+        atom_table() {}
 
         atom_table(std::initializer_list<std::pair<slice, atom_type>> init) {
             for (auto kv : init)
                 add(kv.first, kv.second);
+        }
+
+        atom_table(const atom_table& at) {
+            table.insert(at.table.begin(), at.table.end());
         }
 
         auto add(slice key) noexcept -> atom_type {
@@ -169,7 +173,7 @@ namespace pdf { namespace tools {
         };
 
         std::unordered_map<slice, atom_type, hash> table;
-        atom_type next;
+        atom_type next = 0x10000;
 
         auto haskey(slice key) const noexcept -> bool {
             return table.find(key) != table.end();
