@@ -162,3 +162,23 @@ TEST_CASE("next_token: newlines", "[lexer]") {
     CHECK(t.type() == token_type::name);
     CHECK(t.value() == "name");
 }
+
+TEST_CASE("next_token: strings", "[lexer]") {
+    auto tok = next_token("(simple (nested) string)");
+    CHECK(std::get<0>(tok).value() == "simple (nested) string");
+
+    tok = next_token("(quoted \\( lparen))");
+    CHECK(std::get<0>(tok).value() == "quoted \\( lparen");
+
+    tok = next_token("(quoted \\) rparen)");
+    CHECK(std::get<0>(tok).value() == "quoted \\) rparen");
+
+    tok = next_token("(quoted \\\\ backslash)");
+    CHECK(std::get<0>(tok).value() == "quoted \\\\ backslash");
+
+    tok = next_token("(ignored \\backslash");
+    CHECK(std::get<0>(tok).value() == "ignored \\backslash");
+
+    tok = next_token("(\\n \\r \\t \\b \\f \\( \\) \\\\ \\000 \\020 \\200 \\377)");
+    CHECK(std::get<0>(tok).value() == "\\n \\r \\t \\b \\f \\( \\) \\\\ \\000 \\020 \\200 \\377");
+}

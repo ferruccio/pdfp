@@ -63,11 +63,17 @@ namespace {
 
     auto string(slice src) noexcept -> tuple<token, slice> {
         unsigned int nesting = 0;
-        auto tok = src.take_until([&nesting](char ch)->bool {
+        bool quote = false;
+        auto tok = src.take_until([&](char ch)->bool {
+            if (quote) {
+                quote = false;
+                return false;
+            }
             switch (ch) {
                 case '(': ++nesting; // fall through
                 default: return false;
                 case ')': return --nesting == 0;
+                case '\\': quote = true; return false;
             }
         });
         return make_tuple(token(token_type::string, tok.rest()), src.skip(tok.length() + 1));
