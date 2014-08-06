@@ -181,6 +181,7 @@ namespace pdf { namespace tools {
     };
 
     enum class variant_type {
+        nothing, // used to indicate "no object" vs. null which is a PDF null object
         null, keyword, boolean, integer, real, name, string, hexstring, array, dict
     };
 
@@ -206,13 +207,13 @@ namespace pdf { namespace tools {
         using array_type = std::vector<variant>;
         using dict_type = std::map<atom_type, variant>;
 
-        variant() : _type(variant_type::null) {}
-        ~variant() { nullify(); }
+        variant() {}
+        ~variant() { destroy(); }
 
         variant(const variant& rhs) { *this = rhs; }
 
         variant(variant&& rhs) {
-            nullify();
+            destroy();
             switch (rhs.type()) {
                 case variant_type::array:
                     _var.array = rhs._var.array;
@@ -238,7 +239,7 @@ namespace pdf { namespace tools {
         }
 
         auto operator=(const variant& rhs) noexcept -> variant& {
-            nullify();
+            destroy();
             switch (rhs.type()) {
                 case variant_type::array:
                     _var.array = new array_type(rhs._var.array->size());
@@ -301,6 +302,7 @@ namespace pdf { namespace tools {
             return v;
         }
 
+        auto is_nothing() const noexcept -> bool { return _type == variant_type::nothing; }
         auto is_null() const noexcept -> bool { return _type == variant_type::null; }
         auto is_keyword() const noexcept -> bool { return _type == variant_type::keyword; }
         auto is_name() const noexcept -> bool { return _type == variant_type::name; }
@@ -365,7 +367,7 @@ namespace pdf { namespace tools {
             switch (type()) {
                 case variant_type::array: return _var.array->size();
                 case variant_type::dict: return _var.dict->size();
-                default: return 1;
+                default: return 0;
             }
         }
 
@@ -407,7 +409,7 @@ namespace pdf { namespace tools {
             dict_type* dict;
         };
 
-        void nullify() {
+        void destroy() {
             switch (type()) {
                 case variant_type::array: delete _var.array; break;
                 case variant_type::dict: delete _var.dict; break;
@@ -418,6 +420,7 @@ namespace pdf { namespace tools {
 
         void assign(const variant& rhs) {
             switch (rhs.type()) {
+                case variant_type::nothing: // fall through
                 case variant_type::null: break;
                 case variant_type::keyword: // fall through
                 case variant_type::name: _var.atom = rhs._var.atom; break;
@@ -432,7 +435,7 @@ namespace pdf { namespace tools {
             _type = rhs._type;
         }
 
-        variant_type _type;
+        variant_type _type = variant_type::nothing;
         var _var;
     };
 

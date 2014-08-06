@@ -9,6 +9,7 @@
 namespace pdf {
 
     using tools::slice;
+    using tools::variant;
 
     enum class token_type {
         nothing, bad_token,
@@ -31,8 +32,21 @@ namespace pdf {
         slice _value;
     };
 
-    // Return the first token in a slice and the remainder of the slice.
+    // Returns the first token in a slice and the remainder of the slice.
     auto next_token(slice src) noexcept -> std::tuple<token, slice>;
+
+    using tools::atom_table;
+
+    class parser {
+    public:
+        parser(slice src, atom_table atoms) : src(src), atoms(atoms) {}
+
+        auto next_object() -> variant;
+
+    private:
+        slice src;
+        atom_table atoms;
+    };
 
 }
 
