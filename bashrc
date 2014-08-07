@@ -114,3 +114,5 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
+
+alias lldb='/usr/lib/llvm-3.5/bin/lldb'
