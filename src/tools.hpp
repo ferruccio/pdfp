@@ -182,7 +182,12 @@ namespace pdf { namespace tools {
 
     enum class variant_type {
         nothing, // used to indicate "no object" vs. null which is a PDF null object
-        null, keyword, boolean, integer, real, name, string, hexstring, array, dict
+        null, keyword, boolean, integer, real, name, string, hexstring, array, dict, ref
+    };
+
+    struct objref {
+        objref(int id = 0, int gen = 0) : id(id), gen(gen) {}
+        int id, gen;
     };
 
     /*
@@ -290,6 +295,10 @@ namespace pdf { namespace tools {
             return variant(s, variant_type::hexstring);
         }
 
+        static auto make_ref(int id, int gen) noexcept -> variant {
+            return variant(objref(id, gen));
+        }
+
         static auto make_array() -> variant {
             variant v(variant_type::array);
             v._var.array = new array_type();
@@ -313,6 +322,7 @@ namespace pdf { namespace tools {
         auto is_hexstring() const noexcept -> bool { return _type == variant_type::hexstring; }
         auto is_array() const noexcept -> bool { return _type == variant_type::array; }
         auto is_dict() const noexcept -> bool { return _type == variant_type::dict; }
+        auto is_ref() const noexcept -> bool { return _type == variant_type::ref; }
         auto is_numeric() const noexcept -> bool { return is_integer() || is_real(); }
         auto is_text() const noexcept -> bool { return is_string() || is_hexstring(); }
 
@@ -343,11 +353,16 @@ namespace pdf { namespace tools {
 
         auto get_string() const -> slice {
             if (!is_string()) throw std::runtime_error("pdf::tools::variant: not a string");
-            return _var.ref;
+            return _var.str;
         }
 
         auto get_hexstring() const -> slice {
             if (!is_hexstring()) throw std::runtime_error("pdf::tools::variant: not a hexstring");
+            return _var.str;
+        }
+
+        auto get_ref() const -> objref {
+            if (!is_ref()) throw std::runtime_error("pdf::tools::variant: not a ref");
             return _var.ref;
         }
 
@@ -393,20 +408,22 @@ namespace pdf { namespace tools {
         variant(bool value) : _type(variant_type::boolean) { _var.bool_val = value; }
         variant(int value) : _type(variant_type::integer) { _var.int_val = value; }
         variant(double value) : _type(variant_type::real) { _var.real_val = value; }
-        variant(slice value, variant_type type) : _type(type) { _var.ref = value; }
+        variant(slice value, variant_type type) : _type(type) { _var.str = value; }
+        variant(objref value) : _type(variant_type::ref) { _var.ref = value; }
 
     private:
         union var {
             var() {}
             ~var() {}
 
-            slice ref;
+            slice str;
             atom_type atom;
             bool bool_val;
             int int_val;
             double real_val;
             array_type* array;
             dict_type* dict;
+            objref ref;
         };
 
         void destroy() {
@@ -428,7 +445,8 @@ namespace pdf { namespace tools {
                 case variant_type::integer: _var.int_val = rhs._var.int_val; break;
                 case variant_type::real: _var.real_val = rhs._var.real_val; break;
                 case variant_type::string: // fall through
-                case variant_type::hexstring: _var.ref = rhs._var.ref; break;
+                case variant_type::hexstring: _var.str = rhs._var.str; break;
+                case variant_type::ref: _var.ref = rhs._var.ref; break;
                 // does not handle complex types (array, dict)
                 default: return;
             }

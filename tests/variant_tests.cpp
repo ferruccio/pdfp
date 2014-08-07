@@ -29,6 +29,11 @@ TEST_CASE("variant: simple", "[variant]") {
     CHECK(v.is_real());
     CHECK(v.is_numeric());
     CHECK(v.get_real() == 3.1415926);
+
+    v = variant::make_ref(10, 1);
+    CHECK(v.is_ref());
+    CHECK(v.get_ref().id == 10);
+    CHECK(v.get_ref().gen == 1);
 }
 
 TEST_CASE("variant: strings", "[variant]") {
@@ -194,9 +199,9 @@ TEST_CASE("variant: << dict + atoms", "[variant]") {
     auto& d = v.get_dict();
     d[t["Name"]] = variant::make_string("Charlie Brown");
     d[t["Type"]] = variant::make_keyword(t["keyword"]);
-    d[t["Value"]] = variant::make_real(1.5);
+    d[t["Value"]] = variant::make_ref(100, 0);
 
     stringstream ss;
     ss << v(t);
-    CHECK(ss.str() == "<</Name (Charlie Brown) /Type keyword /Value 1.5>>");
+    CHECK(ss.str() == "<</Name (Charlie Brown) /Type keyword /Value 100 0 R>>");
 }
