@@ -39,13 +39,13 @@ namespace pdf {
 
     class parser {
     public:
-        parser(slice src, atom_table atoms) : src(src), atoms(atoms) {}
+        parser(slice src, atom_table& atoms) : src(src), atoms(atoms) {}
 
         auto next_object() -> variant;
 
     private:
         slice src;
-        atom_table atoms;
+        atom_table& atoms;
     };
 
 }
