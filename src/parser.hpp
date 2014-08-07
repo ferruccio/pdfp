@@ -11,8 +11,9 @@ namespace pdf {
     using tools::slice;
     using tools::variant;
     using tools::atom_table;
+    using tools::atom_type;
 
-    const atom_table pdf_atoms;
+    auto get_pdf_atoms() noexcept -> const atom_table&;
 
     enum class token_type {
         nothing, bad_token,
@@ -38,13 +39,12 @@ namespace pdf {
     // Returns the first token in a slice and the remainder of the slice.
     auto next_token(slice src) noexcept -> std::tuple<token, slice>;
 
-    using tools::atom_table;
-
     class parser {
     public:
         parser(slice src, atom_table& atoms) : src(src), atoms(atoms) {}
 
         auto next_object() -> variant;
+        void expect_keyword(atom_type keyword);
 
     private:
         slice src;

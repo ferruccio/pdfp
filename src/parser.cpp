@@ -236,4 +236,12 @@ namespace pdf {
         }
     }
 
+    void parser::expect_keyword(atom_type keyword) {
+        variant kw = next_object();
+        if (!kw.is_keyword())
+            throw std::runtime_error("expect_keyword: not a keyword");
+        if (kw.get_keyword() != keyword)
+            throw std::runtime_error("expect_keyword: unexpected keyword");
+    }
+
 }

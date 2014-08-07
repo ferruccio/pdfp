@@ -26,4 +26,8 @@ namespace pdf {
 
     };
 
+    auto get_pdf_atoms() noexcept -> const atom_table& {
+        return pdf_atoms;
+    }
+
 }

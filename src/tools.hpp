@@ -154,6 +154,11 @@ namespace pdf { namespace tools {
             return add(key);
         }
 
+        auto find(slice key) const noexcept -> atom_type {
+            auto value = table.find(key);
+            return value != table.end() ? value->second : 0; // assume no atom == 0
+        }
+
         // brute force reverse lookup: for debugging purposes only
         auto lookup(atom_type value) const noexcept -> slice {
             for (const auto& kv : table)

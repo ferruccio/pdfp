@@ -1,4 +1,7 @@
 #include "catch.hpp"
+
+#include "parser.hpp"
+#include "pdf_atoms.hpp"
 #include "tools.hpp"
 
 using pdf::tools::slice;
@@ -52,4 +55,18 @@ TEST_CASE("atom_table: initialized", "[atom_table]") {
     CHECK(t["xyzzy"] == atom::xyzzy);
     CHECK(t["plugh"] == atom::plugh);
     CHECK(t["plover"] == atom::plover);
+}
+
+TEST_CASE("atom_table: pdf_atoms", "[atom_table]") {
+    using namespace pdf;
+
+    const auto& pdf_atoms = get_pdf_atoms();
+
+    CHECK(pdf_atoms.find("trailer") == keywords::trailer);
+    CHECK(pdf_atoms.find("Root") == names::Root);
+
+    atom_table t { pdf_atoms };
+
+    CHECK(t["trailer"] == keywords::trailer);
+    CHECK(t["Root"] == names::Root);
 }

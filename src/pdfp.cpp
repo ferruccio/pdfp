@@ -1,3 +1,5 @@
+#include "parser.hpp"
+#include "pdf_atoms.hpp"
 #include "pdfp.hpp"
 #include "tools.hpp"
 
@@ -5,7 +7,8 @@
 
 namespace pdf {
 
-    using namespace tools;
+    using tools::atom_table;
+    using tools::slice;
 
     class PdfParser : public IPdfParser {
     public:
@@ -15,6 +18,7 @@ namespace pdf {
 
     private:
         slice pdf;
+        atom_table atoms { get_pdf_atoms() };
 
         void init() {
             if (!pdf.starts_with("%PDF-1."))
@@ -22,6 +26,12 @@ namespace pdf {
             slice trailer = pdf.find_last("trailer");
             if (trailer.empty())
                 throw pdf_error("no pdf trailer");
+            process_trailer(trailer);
+        }
+
+        void process_trailer(slice trailer) {
+            parser p(trailer, atoms);
+            p.expect_keyword(keywords::trailer);
         }
     };
 
