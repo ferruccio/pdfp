@@ -10,6 +10,9 @@ namespace pdf {
 
     using tools::slice;
     using tools::variant;
+    using tools::atom_table;
+
+    const atom_table pdf_atoms;
 
     enum class token_type {
         nothing, bad_token,
