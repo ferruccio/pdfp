@@ -1,7 +1,7 @@
 include ../../make.inc
 
 OBJ = dump.cpp
-HDR = pdfp.hpp tools.hpp lexer.hpp
+HDR = pdfp.hpp tools.hpp parser.hpp
 TGT = ../../bin/dump
 LIB = ../../bin/pdfp.a
 

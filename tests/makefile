@@ -1,6 +1,6 @@
 include ../make.inc
 
-OBJ = tests.o slice_tests.o lexer_tests.o atom_table_tests.o variant_tests.o
+OBJ = tests.o slice_tests.o parser_tests.o atom_table_tests.o variant_tests.o
 TGT = ../bin/tests
 
 $(TGT): $(OBJ)

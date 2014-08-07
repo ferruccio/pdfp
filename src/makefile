@@ -1,7 +1,7 @@
 include ../make.inc
 
-OBJ = pdfp.o lexer.o tools.o
-HDR = pdfp.hpp tools.hpp lexer.hpp
+OBJ = pdfp.o parser.o tools.o
+HDR = pdfp.hpp tools.hpp parser.hpp
 TGT = ../bin/pdfp.a
 
 $(TGT):	$(OBJ)

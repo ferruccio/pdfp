@@ -1,6 +1,6 @@
 #include "catch.hpp"
 #include "tools.hpp"
-#include "lexer.hpp"
+#include "parser.hpp"
 
 #include <tuple>
 
