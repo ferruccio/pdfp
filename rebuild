@@ -12,18 +12,21 @@ function banner {
 
 banner src
 pushd src >/dev/null
-make -B
+make clean
+make
 sleep 1
 popd >/dev/null
 
 banner tools/dump
 pushd tools/dump >/dev/null
-make -B
+make clean
+make
 popd >/dev/null
 
 banner tests
 pushd tests >/dev/null
-make -B
+make clean
+make
 ../bin/tests
 popd >/dev/null
 

@@ -13,8 +13,14 @@ using std::stringstream;
 using std::string;
 
 TEST_CASE("variant: simple", "[variant]") {
-    auto v = variant::make_null();
+    variant v;
+    CHECK(v.is_nothing());
+
+    v = variant::make_null();
     CHECK(v.is_null());
+
+    v = variant::make_nothing();
+    CHECK(v.is_nothing());
 
     v = variant::make_boolean(true);
     CHECK(v.is_boolean());
@@ -203,5 +209,5 @@ TEST_CASE("variant: << dict + atoms", "[variant]") {
 
     stringstream ss;
     ss << v(t);
-    CHECK(ss.str() == "<</Name (Charlie Brown) /Type keyword /Value 100 0 R>>");
+    CHECK(ss.str() == "<</Name (Charlie Brown) /Type @keyword /Value 100 0 R>>");
 }

@@ -21,6 +21,9 @@ TEST_CASE("slice: constructors", "[slice]") {
     CHECK(c.length() == 3);
     CHECK(c == slice("xyz"));
     CHECK(*c == 'x');
+    CHECK(c[0] == 'x');
+    CHECK(c[1] == 'y');
+    CHECK(c[2] == 'z');
 }
 
 TEST_CASE("slice: left", "[slice]") {

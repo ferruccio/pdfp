@@ -54,7 +54,10 @@ namespace {
     }
 
     auto name(slice input) noexcept -> token {
-        return token(token_type::name, input.take_until(isbreak));
+        bool first = true;
+        return token(token_type::name, input.take_until([&](char ch)->bool {
+            return first ? first = false : isbreak(ch);
+        }));
     }
 
     auto number(slice input) noexcept -> token {
@@ -64,34 +67,39 @@ namespace {
     auto string(slice input) noexcept -> token {
         unsigned int nesting = 0;
         bool quote = false;
+        bool done = false;
         auto tok = input.take_until([&](char ch)->bool {
-            if (quote) {
-                quote = false;
-                return false;
-            }
+            if (done)
+                return true;
+            if (quote)
+                return quote = false; // assignment is intentional
             switch (ch) {
                 case '(': ++nesting; // fall through
                 default: return false;
-                case ')': return --nesting == 0;
-                case '\\': return !(quote = true);
+                case ')': done = --nesting == 0; return false;
+                case '\\': return !(quote = true); // assignment is intentional
             }
         });
-        return token(token_type::string, tok.rest());
+        return token(token_type::string, tok);
     }
 
     auto lbrack(slice input) noexcept -> token {
-        auto input0 = input.rest();
-        if (input0.empty())
+        if (input.length() < 2)
             return token(token_type::bad_token, input);
-        if (*input0 == '<')
+        if (input[1] == '<')
             return token(token_type::dict_begin, input.left(2));
-        auto tok = input.take_until([](char ch)->bool { return ch == '>'; });
-        return token(token_type::hexstring, tok.rest());
+        bool done = false;
+        auto tok = input.take_until([&](char ch)->bool {
+            if (done)
+                return true;
+            done = ch == '>';
+            return false;
+        });
+        return token(token_type::hexstring, tok);
     }
 
     auto rbrack(slice input) noexcept -> token {
-        auto input0 = input.rest();
-        return input0.empty() || *input0 != '>'
+        return input.length() < 2 || input[1] != '>'
             ? token(token_type::bad_token, input)
             : token(token_type::dict_end, input.left(2));
     }
@@ -146,7 +154,7 @@ namespace pdf {
         }
 
         switch (*input) {
-            case '/': return name(input.rest());
+            case '/': return name(input);
             case '0': case '1': case '2': case '3': case '4':
             case '5': case '6': case '7': case '8': case '9':
             case '+': case '-': case '.': return number(input);
@@ -236,7 +244,13 @@ namespace pdf {
         switch (tok.type()) {
             case token_type::nothing: return variant();
             case token_type::bad_token: throw std::runtime_error("next_object: invalid token");
-            case token_type::keyword: return variant::make_keyword(atoms[tok.value()]);
+            case token_type::keyword:
+                switch (atoms[tok.value()]) {
+                    case keywords::null: return variant::make_null();
+                    case keywords::_true: return variant::make_boolean(true);
+                    case keywords::_false: return variant::make_boolean(false);
+                    default: return variant::make_keyword(atoms[tok.value()]);
+                }
             case token_type::name: return variant::make_name(atoms[tok.value()]);
             case token_type::string: return variant::make_string(tok.value());
             case token_type::hexstring: return variant::make_hexstring(tok.value());

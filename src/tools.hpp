@@ -69,6 +69,10 @@ namespace pdf { namespace tools {
             return empty() ? *this : slice(_begin + 1, _end);
         }
 
+        auto operator[](int i) const noexcept -> char {
+            return _begin[i];
+        }
+
         auto starts_with(slice s) const noexcept -> bool {
             return left(s.length()) == s;
         }
@@ -274,6 +278,10 @@ namespace pdf { namespace tools {
             return *this;
         }
 
+        static auto make_nothing() noexcept -> variant {
+            return variant(variant_type::nothing);
+        }
+
         static auto make_null() noexcept -> variant {
             return variant(variant_type::null);
         }
@@ -336,6 +344,26 @@ namespace pdf { namespace tools {
         auto is_ref() const noexcept -> bool { return _type == variant_type::ref; }
         auto is_numeric() const noexcept -> bool { return is_integer() || is_real(); }
         auto is_text() const noexcept -> bool { return is_string() || is_hexstring(); }
+
+        auto is_boolean(bool value) const noexcept -> bool {
+            return is_boolean() && _var.bool_val == value;
+        }
+
+        auto is_integer(int value) const noexcept -> bool {
+            return is_integer() && _var.int_val == value;
+        }
+
+        auto is_real(double value) const noexcept -> bool {
+            return is_real() && _var.real_val == value;
+        }
+
+        auto is_string(slice value) const noexcept -> bool {
+            return is_string() && _var.str == value;
+        }
+
+        auto is_hexstring(slice value) const noexcept -> bool {
+            return is_hexstring() && _var.str == value;
+        }
 
         auto get_keyword() const -> atom_type {
             if (!is_keyword()) throw std::runtime_error("pdf::tools::variant: not a keyword");
@@ -443,7 +471,7 @@ namespace pdf { namespace tools {
                 case variant_type::dict: delete _var.dict; break;
                 default: break;
             }
-            _type = variant_type::null;
+            _type = variant_type::nothing;
         }
 
         void assign(const variant& rhs) {
