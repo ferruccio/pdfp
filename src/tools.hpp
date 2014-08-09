@@ -77,6 +77,12 @@ namespace pdf { namespace tools {
             return slice(begin() + std::min(n, length()), end());
         }
 
+        auto skip(slice s) const noexcept -> slice {
+            return s.begin() >= this->begin() && s.end() <= this->end()
+                ? slice(s.end(), this->end())
+                : *this;
+        }
+
         auto skip_until(std::function<auto (char)->bool> pred) const noexcept -> slice {
             auto p = begin();
             while (p != end() && !pred(*p))

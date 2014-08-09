@@ -1,4 +1,5 @@
 #include "parser.hpp"
+#include "pdf_atoms.hpp"
 
 namespace {
 
@@ -46,26 +47,24 @@ namespace {
         }
     }
 
-    auto skipws(slice src) noexcept -> slice {
-        while (!src.empty() && iswhitespace(*src))
-            src = src.rest();
-        return src;
+    auto skipws(slice input) noexcept -> slice {
+        while (!input.empty() && iswhitespace(*input))
+            input = input.rest();
+        return input;
     }
 
-    auto name(slice src) noexcept -> tuple<token, slice> {
-        auto tok = src.take_until(isbreak);
-        return make_tuple(token(token_type::name, tok), src.skip(tok.length()));
+    auto name(slice input) noexcept -> token {
+        return token(token_type::name, input.take_until(isbreak));
     }
 
-    auto number(slice src) noexcept -> tuple<token, slice> {
-        auto tok = src.take_while(isnumeric);
-        return make_tuple(token(token_type::number, tok), src.skip(tok.length()));
+    auto number(slice input) noexcept -> token {
+        return token(token_type::number, input.take_while(isnumeric));
     }
 
-    auto string(slice src) noexcept -> tuple<token, slice> {
+    auto string(slice input) noexcept -> token {
         unsigned int nesting = 0;
         bool quote = false;
-        auto tok = src.take_until([&](char ch)->bool {
+        auto tok = input.take_until([&](char ch)->bool {
             if (quote) {
                 quote = false;
                 return false;
@@ -77,35 +76,31 @@ namespace {
                 case '\\': return !(quote = true);
             }
         });
-        return make_tuple(token(token_type::string, tok.rest()), src.skip(tok.length() + 1));
+        return token(token_type::string, tok.rest());
     }
 
-    auto lbrack(slice src) noexcept -> tuple<token, slice> {
-        auto src0 = src.rest();
-        if (src0.empty())
-            return make_tuple(token(token_type::bad_token, src), src);
-        if (*src0 == '<')
-            return make_tuple(token(token_type::dict_begin, src.left(2)), src0.rest());
-        auto tok = src.take_until([](char ch)->bool { return ch == '>'; });
-        return make_tuple(token(token_type::hexstring, tok.rest()), src.skip(tok.length() + 1));
+    auto lbrack(slice input) noexcept -> token {
+        auto input0 = input.rest();
+        if (input0.empty())
+            return token(token_type::bad_token, input);
+        if (*input0 == '<')
+            return token(token_type::dict_begin, input.left(2));
+        auto tok = input.take_until([](char ch)->bool { return ch == '>'; });
+        return token(token_type::hexstring, tok.rest());
     }
 
-    auto rbrack(slice src) noexcept -> tuple<token, slice> {
-        auto src0 = src.rest();
-        return src0.empty() || *src0 != '>'
-            ? make_tuple(token(token_type::bad_token, src), src)
-            : make_tuple(token(token_type::dict_end, src.left(2)), src0.rest());
+    auto rbrack(slice input) noexcept -> token {
+        auto input0 = input.rest();
+        return input0.empty() || *input0 != '>'
+            ? token(token_type::bad_token, input)
+            : token(token_type::dict_end, input.left(2));
     }
 
-    auto single_char(slice src, token_type type) noexcept -> tuple<token, slice> {
-        return make_tuple(token(type, src.left(1)), src.rest());
-    }
-
-    auto keyword(slice src) noexcept -> tuple<token, slice> {
-        auto tok = src.take_until(isbreak);
+    auto keyword(slice input) noexcept -> token {
+        auto tok = input.take_until(isbreak);
         return tok.length() == 0
-            ? make_tuple(token(token_type::bad_token, src), src)
-            : make_tuple(token(token_type::keyword, tok), src.skip(tok.length()));
+            ? token(token_type::bad_token, input)
+            : token(token_type::keyword, tok);
     }
 
 }
@@ -138,33 +133,41 @@ namespace pdf {
     }
 
     /*
+        Returns the first token in input.
+    */
+    auto peek_token(slice input) noexcept -> token {
+        // skip over any whitespace and comments
+        for (;;) {
+            if ((input = skipws(input)).empty())
+                return token(token_type::nothing, input);
+            if (*input != '%')
+                break;
+            input = input.skip_until(iseol);
+        }
+
+        switch (*input) {
+            case '/': return name(input.rest());
+            case '0': case '1': case '2': case '3': case '4':
+            case '5': case '6': case '7': case '8': case '9':
+            case '+': case '-': case '.': return number(input);
+            case '(': return string(input);
+            case '<': return lbrack(input);
+            case '>': return rbrack(input);
+            case '[': return token(token_type::array_begin, input.left(1));
+            case ']': return token(token_type::array_end, input.left(1));
+            default: return keyword(input);
+        }
+    }
+
+    /*
         Returns a tuple consisting of the first token in the slice and
         another slice which consists of the original slice minus the initial token.
         By repeatedly calling next_token() and feeding the remainder slice back
         into it, we can extract all tokens in a slice.
     */
-    auto next_token(slice src) noexcept -> tuple<token, slice> {
-        // skip over any whitespace and comments
-        for (;;) {
-            if ((src = skipws(src)).empty())
-                return make_tuple(token(token_type::nothing, src), src);
-            if (*src != '%')
-                break;
-            src = src.skip_until(iseol);
-        }
-
-        switch (*src) {
-            case '/': return name(src.rest());
-            case '0': case '1': case '2': case '3': case '4':
-            case '5': case '6': case '7': case '8': case '9':
-            case '+': case '-': case '.': return number(src);
-            case '(': return string(src);
-            case '<': return lbrack(src);
-            case '>': return rbrack(src);
-            case '[': return single_char(src, token_type::array_begin);
-            case ']': return single_char(src, token_type::array_end);
-            default: return keyword(src);
-        }
+    auto next_token(slice input) noexcept -> tuple<token, slice> {
+        auto tok = peek_token(input);
+        return make_tuple(tok, input.skip(tok.value()));
     }
 
 }
@@ -206,13 +209,23 @@ namespace {
 
     }
 
-    auto parse_array() -> variant {
-        return variant();
+    /*
+        Replace the id and gen objects at the end of objects vector with a reference object.
+    */
+    void generate_reference(std::vector<variant>& objects) {
+        if (objects.size() < 2)
+            throw std::runtime_error("generate_reference: not enough objects");
+        auto gen = objects.back();
+        if (!gen.is_integer())
+            throw std::runtime_error("generate_reference: gen is not an integer");
+        objects.pop_back();
+        auto id = objects.back();
+        if (!id.is_integer())
+            throw std::runtime_error("generate_reference: id is not an integer");
+        objects.pop_back();
+        objects.push_back(variant::make_ref(id.get_integer(), gen.get_integer()));
     }
 
-    auto parse_dict() -> variant {
-        return variant();
-    }
 }
 
 namespace pdf {
@@ -242,6 +255,37 @@ namespace pdf {
             throw std::runtime_error("expect_keyword: not a keyword");
         if (kw.get_keyword() != keyword)
             throw std::runtime_error("expect_keyword: unexpected keyword");
+    }
+
+    void parser::parse_until(token_type type, std::vector<variant>& result) {
+        for (;;) {
+            auto tok = peek_token(this->src);
+            if (tok.type() == type) {
+                skip_token(tok);
+                return;
+            }
+            if (tok.type() == token_type::nothing)
+                throw std::runtime_error("parse_until: unexpected end");
+            if (tok.type() == token_type::keyword && atoms[tok.value()] == keywords::R) {
+                generate_reference(result);
+                skip_token(tok);
+            } else {
+                result.push_back(next_object());
+            }
+        }
+    }
+
+    auto parser::parse_array() -> variant {
+        auto array = variant::make_array();
+        parse_until(token_type::array_end, array.get_array());
+        return array;
+    }
+
+    auto parser::parse_dict() -> variant {
+        std::vector<variant> source;
+        parse_until(token_type::dict_end, source);
+        auto dict = variant::make_dict();
+        return dict;
     }
 
 }

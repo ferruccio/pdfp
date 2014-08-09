@@ -13,8 +13,11 @@ namespace pdf {
     const atom_table pdf_atoms {
 
         // keywords
+        { "false", keywords::_false },
+        { "null", keywords::null },
         { "R", keywords::R },
         { "trailer", keywords::trailer },
+        { "true", keywords::_true },
         { "startxref", keywords::startxref },
         { "xref", keywords::xref },
 

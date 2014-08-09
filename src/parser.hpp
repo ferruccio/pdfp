@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include <tuple>
+#include <vector>
 
 #include "tools.hpp"
 
@@ -36,19 +37,27 @@ namespace pdf {
         slice _value;
     };
 
-    // Returns the first token in a slice and the remainder of the slice.
-    auto next_token(slice src) noexcept -> std::tuple<token, slice>;
+    auto peek_token(slice input) noexcept -> token;
+    auto next_token(slice input) noexcept -> std::tuple<token, slice>;
 
     class parser {
     public:
-        parser(slice src, atom_table& atoms) : src(src), atoms(atoms) {}
+        parser(slice src, const atom_table& atoms) : src(src), atoms(atoms) {}
 
         auto next_object() -> variant;
         void expect_keyword(atom_type keyword);
 
     private:
         slice src;
-        atom_table& atoms;
+        atom_table atoms;
+
+        void skip_token(token tok) noexcept {
+            this->src = this->src.skip(tok.value());
+        }
+
+        void parse_until(token_type type, std::vector<variant>& result);
+        auto parse_array() -> variant;
+        auto parse_dict() -> variant;
     };
 
 }

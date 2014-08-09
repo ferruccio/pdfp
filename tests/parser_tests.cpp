@@ -1,6 +1,7 @@
 #include "catch.hpp"
 #include "tools.hpp"
 #include "parser.hpp"
+#include "pdf_atoms.hpp"
 
 #include <tuple>
 
@@ -8,6 +9,8 @@ using pdf::tools::slice;
 using pdf::token_type;
 using pdf::token;
 using pdf::next_token;
+using pdf::parser;
+using pdf::keywords;
 
 using std::tie;
 
@@ -181,4 +184,30 @@ TEST_CASE("next_token: strings", "[lexer]") {
 
     tok = next_token("(\\n \\r \\t \\b \\f \\( \\) \\\\ \\000 \\020 \\200 \\377)");
     CHECK(std::get<0>(tok).value() == "\\n \\r \\t \\b \\f \\( \\) \\\\ \\000 \\020 \\200 \\377");
+}
+
+TEST_CASE("next_token: pdf keywords", "[lexer]") {
+    using namespace pdf;
+
+    const atom_table& t = get_pdf_atoms();
+
+    auto tok = std::get<0>(next_token("null"));
+    CHECK(tok.type() == token_type::keyword);
+    CHECK(t.find(tok.value()) == keywords::null);
+    tok = std::get<0>(next_token("  true  "));
+    CHECK(tok.type() == token_type::keyword);
+    CHECK(t.find(tok.value()) == keywords::_true);
+    tok = std::get<0>(next_token("\nfalse\t"));
+    CHECK(tok.type() == token_type::keyword);
+    CHECK(t.find(tok.value()) == keywords::_false);
+}
+
+TEST_CASE("next_object: null", "[parser]") {
+    using namespace pdf;
+
+    atom_table t { get_pdf_atoms() };
+    parser p(" null ", t);
+    auto o = p.next_object();
+    INFO("no: " << o(t));
+    CHECK(o.is_null());
 }

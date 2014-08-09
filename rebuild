@@ -1,28 +1,32 @@
 #!/bin/bash
 
-pushd /vagrant >/dev/null
+if [ -d "/vagrant" ]; then
+    pushd /vagrant >/dev/null
+fi
 
-printf "\n----------\n"
-printf "building src..."
-printf "\n----------\n"
+function banner {
+    printf "\n+---------------------------------\n"
+    printf "| building %s..." $1
+    printf "\n+---------------------------------\n"
+}
+
+banner src
 pushd src >/dev/null
 make -B
 sleep 1
 popd >/dev/null
 
-printf "\n----------\n"
-printf "building tools/dump..."
-printf "\n----------\n"
+banner tools/dump
 pushd tools/dump >/dev/null
 make -B
 popd >/dev/null
 
-printf "\n----------\n"
-printf "building tests..."
-printf "\n----------\n"
+banner tests
 pushd tests >/dev/null
 make -B
 ../bin/tests
 popd >/dev/null
 
-popd >/dev/null
+if [ -d "/vagrant" ]; then
+    popd >/dev/null
+fi
