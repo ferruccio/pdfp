@@ -365,6 +365,10 @@ namespace pdf { namespace tools {
             return is_hexstring() && _var.str == value;
         }
 
+        auto is_ref(int id, int gen) const noexcept -> bool {
+            return is_ref() && _var.ref.id == id && _var.ref.gen == gen;
+        }
+
         auto get_keyword() const -> atom_type {
             if (!is_keyword()) throw std::runtime_error("pdf::tools::variant: not a keyword");
             return _var.atom;

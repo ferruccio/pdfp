@@ -147,11 +147,11 @@ TEST_CASE("variant: << simple", "[variant]") {
     CHECK(ss.str() == "2.5");
 
     ss.str("");
-    ss << variant::make_string("xyzzy");
+    ss << variant::make_string("(xyzzy)");
     CHECK(ss.str() == "(xyzzy)");
 
     ss.str("");
-    ss << variant::make_hexstring("deadbeef");
+    ss << variant::make_hexstring("<deadbeef>");
     CHECK(ss.str() == "<deadbeef>");
 
     ss.str("");
@@ -172,19 +172,19 @@ TEST_CASE("variant: << array/dict", "[variant]") {
     a.push_back(variant::make_boolean(false));
     a.push_back(variant::make_integer(3));
     a.push_back(variant::make_real(2.5));
-    a.push_back(variant::make_string("xyzzy"));
-    a.push_back(variant::make_hexstring("deadbeef"));
+    a.push_back(variant::make_string("(xyzzy)"));
+    a.push_back(variant::make_hexstring("<deadbeef>"));
 
     auto v2 = variant::make_array();
     auto& a2 = v2.get_array();
-    a2.push_back(variant::make_string("xyzzy"));
+    a2.push_back(variant::make_string("(xyzzy)"));
     a2.push_back(variant::make_integer(32));
     a2.push_back(variant::make_boolean(false));
     a.push_back(v2);
 
     auto v3 = variant::make_dict();
     auto& d3 = v3.get_dict();
-    d3[10] = variant::make_string("plover");
+    d3[10] = variant::make_string("(plover)");
     d3[11] = variant::make_real(3.5);
     d3[13] = variant::make_boolean(true);
     a.push_back(v3);
@@ -203,7 +203,7 @@ TEST_CASE("variant: << dict + atoms", "[variant]") {
 
     auto v = variant::make_dict();
     auto& d = v.get_dict();
-    d[t["Name"]] = variant::make_string("Charlie Brown");
+    d[t["Name"]] = variant::make_string("(Charlie Brown)");
     d[t["Type"]] = variant::make_keyword(t["keyword"]);
     d[t["Value"]] = variant::make_ref(100, 0);
 

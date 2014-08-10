@@ -15,8 +15,8 @@ namespace pdf { namespace tools {
             case variant_type::boolean: os << (v.get_boolean() ? "true" : "false"); break;
             case variant_type::integer: os << v.get_integer(); break;
             case variant_type::real: os << v.get_real(); break;
-            case variant_type::string: os << '(' << v.get_string() << ')'; break;
-            case variant_type::hexstring: os << '<' << v.get_hexstring() << '>'; break;
+            case variant_type::string: os << v.get_string(); break;
+            case variant_type::hexstring: os << v.get_hexstring(); break;
             case variant_type::keyword: os << '@' << v.get_keyword(); break;
             case variant_type::name: os << '/' << v.get_name(); break;
             case variant_type::ref: os << v.get_ref().id << ' ' << v.get_ref().gen << " R"; break;
@@ -60,10 +60,10 @@ namespace pdf { namespace tools {
             case variant_type::boolean: os << (v.get_boolean() ? "true" : "false"); break;
             case variant_type::integer: os << v.get_integer(); break;
             case variant_type::real: os << v.get_real(); break;
-            case variant_type::string: os << '(' << v.get_string() << ')'; break;
-            case variant_type::hexstring: os << '<' << v.get_hexstring() << '>'; break;
+            case variant_type::string: os << v.get_string(); break;
+            case variant_type::hexstring: os << v.get_hexstring(); break;
             case variant_type::keyword: os << '@' << vp.atoms.lookup(v.get_keyword()); break;
-            case variant_type::name: os << '/' << vp.atoms.lookup(v.get_name()); break;
+            case variant_type::name: os << vp.atoms.lookup(v.get_name()); break;
             case variant_type::ref: os << v.get_ref().id << ' ' << v.get_ref().gen << " R"; break;
             case variant_type::array: {
                 bool space = false;

@@ -22,10 +22,10 @@ namespace pdf {
         { "xref", keywords::xref },
 
         // names
-        { "ID", names::ID },
-        { "Info", names::Info },
-        { "Root", names::Root },
-        { "Size", names::Size },
+        { "/ID", names::ID },
+        { "/Info", names::Info },
+        { "/Root", names::Root },
+        { "/Size", names::Size },
 
     };
 

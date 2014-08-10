@@ -257,3 +257,39 @@ TEST_CASE("next_object: nested array", "[parser]") {
     CHECK(a2[1].is_integer(4));
     CHECK(a2[2].is_integer(5));
 }
+
+TEST_CASE("next_object: dict", "[parser]") {
+    using namespace pdf;
+
+    atom_table t { get_pdf_atoms() };
+    parser p("<</Name (Fred) /Age 35 /Obj 10 20 R>>", t);
+    auto o = p.next_object();
+    CHECK(o.is_dict());
+    CHECK(o.size() == 3);
+    CHECK(o[t["/Name"]].is_string("(Fred)"));
+    CHECK(o[t["/Age"]].is_integer(35));
+    CHECK(o[t["/Obj"]].is_ref(10, 20));
+}
+
+TEST_CASE("next_object: nested dict", "[parser]") {
+    using namespace pdf;
+
+    atom_table t { get_pdf_atoms() };
+    parser p("<</Name (Fred) /Vec [1 2 3] /Stuff <</Start 10 0 R /End 11 0 R>>>>", t);
+    auto o = p.next_object();
+    CHECK(o.is_dict());
+    CHECK(o[t["/Name"]].is_string("(Fred)"));
+    CHECK(o[t["/Vec"]].is_array());
+    CHECK(o[t["/Stuff"]].is_dict());
+
+    auto a = o[t["/Vec"]].get_array();
+    CHECK(a.size() == 3);
+    CHECK(a[0].is_integer(1));
+    CHECK(a[1].is_integer(2));
+    CHECK(a[2].is_integer(3));
+
+    auto d = o[t["/Stuff"]];
+    CHECK(d.size() == 2);
+    CHECK(d[t["/Start"]].is_ref(10, 0));
+    CHECK(d[t["/End"]].is_ref(11, 0));
+}

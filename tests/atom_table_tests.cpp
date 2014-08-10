@@ -63,10 +63,10 @@ TEST_CASE("atom_table: pdf_atoms", "[atom_table]") {
     const auto& pdf_atoms = get_pdf_atoms();
 
     CHECK(pdf_atoms.find("trailer") == keywords::trailer);
-    CHECK(pdf_atoms.find("Root") == names::Root);
+    CHECK(pdf_atoms.find("/Root") == names::Root);
 
     atom_table t { pdf_atoms };
 
     CHECK(t["trailer"] == keywords::trailer);
-    CHECK(t["Root"] == names::Root);
+    CHECK(t["/Root"] == names::Root);
 }

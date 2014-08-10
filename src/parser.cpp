@@ -299,6 +299,17 @@ namespace pdf {
         std::vector<variant> source;
         parse_until(token_type::dict_end, source);
         auto dict = variant::make_dict();
+        auto& d = dict.get_dict();
+        const variant* name = nullptr;
+        for (const auto& v : source)
+            if (name == nullptr) {
+                name = &v;
+                if (!name->is_name())
+                    throw std::runtime_error("parse_dict: not a name");
+            } else {
+                d[name->get_name()] = v;
+                name = nullptr;
+            }
         return dict;
     }
 
