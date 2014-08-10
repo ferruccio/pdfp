@@ -1,7 +1,6 @@
 #include "catch.hpp"
 #include "tools.hpp"
 #include "parser.hpp"
-#include "pdf_atoms.hpp"
 
 #include <tuple>
 
@@ -189,7 +188,7 @@ TEST_CASE("next_token: strings", "[lexer]") {
 TEST_CASE("next_token: pdf keywords", "[lexer]") {
     using namespace pdf;
 
-    const atom_table& t = get_pdf_atoms();
+    atom_table t;
 
     auto tok = std::get<0>(next_token("null"));
     CHECK(tok.type() == token_type::keyword);
@@ -205,7 +204,7 @@ TEST_CASE("next_token: pdf keywords", "[lexer]") {
 TEST_CASE("next_object: simple", "[parser]") {
     using namespace pdf;
 
-    atom_table t { get_pdf_atoms() };
+    atom_table t;
     parser p(" null true false 1 2.5 (string) <deadbeef>", t);
     CHECK(p.next_object().is_null());
     CHECK(p.next_object().is_boolean(true));
@@ -220,7 +219,7 @@ TEST_CASE("next_object: simple", "[parser]") {
 TEST_CASE("next_object: array", "[parser]") {
     using namespace pdf;
 
-    atom_table t { get_pdf_atoms() };
+    atom_table t;
     parser p(" [null true false 1 2.5 (string) <deadbeef>]", t);
     auto o = p.next_object();
     CHECK(o.is_array());
@@ -239,7 +238,7 @@ TEST_CASE("next_object: array", "[parser]") {
 TEST_CASE("next_object: nested array", "[parser]") {
     using namespace pdf;
 
-    atom_table t { get_pdf_atoms() };
+    atom_table t;
     parser p(" [1 2 [3 4 5] 6 7]", t);
     auto o = p.next_object();
     CHECK(o.is_array());
@@ -261,7 +260,7 @@ TEST_CASE("next_object: nested array", "[parser]") {
 TEST_CASE("next_object: dict", "[parser]") {
     using namespace pdf;
 
-    atom_table t { get_pdf_atoms() };
+    atom_table t;
     parser p("<</Name (Fred) /Age 35 /Obj 10 20 R>>", t);
     auto o = p.next_object();
     CHECK(o.is_dict());
@@ -274,7 +273,7 @@ TEST_CASE("next_object: dict", "[parser]") {
 TEST_CASE("next_object: nested dict", "[parser]") {
     using namespace pdf;
 
-    atom_table t { get_pdf_atoms() };
+    atom_table t;
     parser p("<</Name (Fred) /Vec [1 2 3] /Stuff <</Start 10 0 R /End 11 0 R>>>>", t);
     auto o = p.next_object();
     CHECK(o.is_dict());

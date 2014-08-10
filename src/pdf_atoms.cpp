@@ -1,16 +1,17 @@
-#include "pdf_atoms.hpp"
+#include "tools/pdf_atoms.hpp"
 #include "tools.hpp"
 
 namespace pdf {
 
-    using tools::atom_table;
+    using tools::slice;
+    using tools::atom_type;
 
     /*
         The pdf_atoms table is an immmutable atom_table used to initialize the
-        contents of a parser's atom_table with pre-defined PDF keywords and names.
+        contents of a parser's atom_table with pre-defined PDF symbols.
     */
 
-    const atom_table pdf_atoms {
+    const std::unordered_map<slice, atom_type, tools::atom_table::hash> tools::atom_table::pdf_table {
 
         // keywords
         { "false", keywords::_false },
@@ -28,9 +29,5 @@ namespace pdf {
         { "/Size", names::Size },
 
     };
-
-    auto get_pdf_atoms() noexcept -> const atom_table& {
-        return pdf_atoms;
-    }
 
 }

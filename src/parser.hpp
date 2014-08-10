@@ -14,8 +14,6 @@ namespace pdf {
     using tools::atom_table;
     using tools::atom_type;
 
-    auto get_pdf_atoms() noexcept -> const atom_table&;
-
     enum class token_type {
         nothing, bad_token,
         keyword, name, string, hexstring, number,

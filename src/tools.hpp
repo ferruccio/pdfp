@@ -4,5 +4,6 @@
 #include "tools/slice.hpp"
 #include "tools/atom_table.hpp"
 #include "tools/variant.hpp"
+#include "tools/pdf_atoms.hpp"
 
 #endif

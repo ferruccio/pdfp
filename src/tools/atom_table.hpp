@@ -17,17 +17,13 @@ namespace pdf { namespace tools {
     public:
         atom_table() {}
 
-        atom_table(std::initializer_list<std::pair<slice, atom_type>> init) {
-            for (auto kv : init)
-                add(kv.first, kv.second);
-        }
-
-        atom_table(const atom_table& at) {
-            table.insert(at.table.begin(), at.table.end());
-        }
+        const atom_type nothing = 0; // assume no atom == 0
 
         auto add(slice key) noexcept -> atom_type {
-            auto value = table.find(key);
+            auto value = pdf_table.find(key);
+            if (value != pdf_table.end())
+                return value->second;
+            value = table.find(key);
             return value != table.end() ? value->second : table[key] = next++;
         }
 
@@ -41,12 +37,18 @@ namespace pdf { namespace tools {
         }
 
         auto find(slice key) const noexcept -> atom_type {
-            auto value = table.find(key);
-            return value != table.end() ? value->second : 0; // assume no atom == 0
+            auto value = pdf_table.find(key);
+            if (value != pdf_table.end())
+                return value->second;
+            value = table.find(key);
+            return value != table.end() ? value->second : nothing;
         }
 
         // brute force reverse lookup: for debugging purposes only
         auto lookup(atom_type value) const noexcept -> slice {
+            for (const auto& kv : pdf_table)
+                if (kv.second == value)
+                    return kv.first;
             for (const auto& kv : table)
                 if (kv.second == value)
                     return kv.first;
@@ -63,11 +65,15 @@ namespace pdf { namespace tools {
             }
         };
 
+        // PDF symbols
+        static const std::unordered_map<slice, atom_type, hash> pdf_table;
+
+        // other symbols
         std::unordered_map<slice, atom_type, hash> table;
         atom_type next = 0x10000;
 
         auto haskey(slice key) const noexcept -> bool {
-            return table.find(key) != table.end();
+            return pdf_table.find(key) != pdf_table.end() || table.find(key) != table.end();
         }
     };
 

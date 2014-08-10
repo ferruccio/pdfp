@@ -9,4 +9,4 @@ $(TGT): dump.cpp $(LIB)
 	$(CPP) $(CCOPTS) -I ../../src dump.cpp $(LIB) -o $(TGT)
 
 clean:
-	rm $(TGT)
+	rm -f $(TGT)

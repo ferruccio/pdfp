@@ -1,5 +1,4 @@
 #include "parser.hpp"
-#include "pdf_atoms.hpp"
 #include "pdfp.hpp"
 #include "tools.hpp"
 
@@ -18,7 +17,7 @@ namespace pdf {
 
     private:
         slice pdf;
-        atom_table atoms { get_pdf_atoms() };
+        atom_table atoms;
 
         void init() {
             if (!pdf.starts_with("%PDF-1."))
