@@ -42,17 +42,17 @@ namespace pdf {
 
     class parser {
     public:
-        parser(slice src, const atom_table& atoms) : src(src), atoms(atoms) {}
+        parser(slice input, const atom_table& atoms) : input(input), atoms(atoms) {}
 
         auto next_object() -> variant;
         void expect_keyword(atom_type keyword);
 
     private:
-        slice src;
+        slice input;
         atom_table atoms;
 
         void skip_token(token tok) noexcept {
-            this->src = this->src.skip(tok.value());
+            this->input = this->input.skip(tok.value());
         }
 
         void parse_until(token_type type, std::vector<variant>& result);

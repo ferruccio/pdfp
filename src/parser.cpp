@@ -187,17 +187,17 @@ namespace {
     /*
         Parser support functions.
     */
-    auto parse_number(slice src) -> variant {
+    auto parse_number(slice input) -> variant {
         long isign = 1;
         double rsign = 1.0;
-        switch (src.first()) {
+        switch (input.first()) {
             case '-': isign = -1; rsign = -1.0; // fall through
-            case '+': src = src.rest(); break;
+            case '+': input = input.rest(); break;
         }
         bool decimal = false;
         double divisor = 1.0;
         long value = 0;
-        for (char c : src)
+        for (char c : input)
             switch (c) {
                 case '.':
                     if (!decimal) {
@@ -240,7 +240,7 @@ namespace pdf {
 
     auto parser::next_object() -> variant {
         token tok;
-        tie(tok, this->src) = next_token(this->src);
+        tie(tok, this->input) = next_token(this->input);
         switch (tok.type()) {
             case token_type::nothing: return variant();
             case token_type::bad_token: throw std::runtime_error("next_object: invalid token");
@@ -273,7 +273,7 @@ namespace pdf {
 
     void parser::parse_until(token_type type, std::vector<variant>& result) {
         for (;;) {
-            auto tok = peek_token(this->src);
+            auto tok = peek_token(this->input);
             if (tok.type() == type) {
                 skip_token(tok);
                 return;
