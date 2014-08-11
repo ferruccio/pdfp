@@ -31,6 +31,14 @@ namespace pdf {
         void process_trailer(slice trailer) {
             parser p(trailer, atoms);
             p.expect_keyword(keywords::trailer);
+            auto d = p.next_object();
+            if (!d.is_dict())
+                throw pdf_error("no pdf dictionary");
+            p.expect_keyword(keywords::startxref);
+            auto v = p.next_object();
+            if (!v.is_integer())
+                throw pdf_error("startxref not an integer");
+            int startxref = v.get_integer();
         }
     };
 
