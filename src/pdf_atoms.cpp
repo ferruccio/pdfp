@@ -25,6 +25,7 @@ namespace pdf {
         // names
         { "/ID", names::ID },
         { "/Info", names::Info },
+        { "/Prev", names::Prev },
         { "/Root", names::Root },
         { "/Size", names::Size },
 

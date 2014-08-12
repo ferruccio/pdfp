@@ -274,6 +274,13 @@ namespace pdf {
             throw format_error("parser::expect_keyword: unexpected keyword");
     }
 
+    auto parser::expect_integer() -> int {
+        variant i = next_object();
+        if (!i.is_integer())
+            throw format_error("parser::expect_integer: not an integer");
+        return i.get_integer();
+    }
+
     void parser::parse_until(token_type type, std::vector<variant>& result) {
         for (;;) {
             auto tok = peek_token(this->input);

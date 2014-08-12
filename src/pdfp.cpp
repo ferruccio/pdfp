@@ -1,11 +1,16 @@
-#include "parser.hpp"
-#include "pdfp.hpp"
-#include "tools.hpp"
-
 #include <memory>
+
+#include "pdfp.hpp"
+
+#include "parser.hpp"
+#include "pdf_dictionaries.hpp"
+#include "tools.hpp"
+#include "xref_table.hpp"
 
 namespace pdf {
 
+    using std::make_unique;
+    using std::unique_ptr;
     using tools::atom_table;
     using tools::slice;
 
@@ -17,6 +22,7 @@ namespace pdf {
     private:
         slice pdf;
         atom_table atoms;
+        unique_ptr<xref_table> xref;
 
         void init() {
             if (!pdf.starts_with("%PDF-1."))
@@ -27,22 +33,24 @@ namespace pdf {
             process_trailer(trailer);
         }
 
-        void process_trailer(slice trailer) {
-            parser p(trailer, atoms);
+        void process_trailer(slice input) {
+            parser p(input, atoms);
+
             p.expect_keyword(keywords::trailer);
             auto d = p.next_object();
             if (!d.is_dict())
-                throw pdf_error("no pdf dictionary");
+                throw format_error("pdf_parser::process_trailer: no pdf dictionary");
+            trailer_dict trailer(d);
+
+            xref = make_unique<xref_table>(pdf, trailer.Size());
+
             p.expect_keyword(keywords::startxref);
-            auto v = p.next_object();
-            if (!v.is_integer())
-                throw pdf_error("startxref not an integer");
-            int startxref = v.get_integer();
+            xref->get_from(p.expect_integer());
         }
     };
 
-    auto make_pdf_parser(const char* begin, const char* end) -> std::unique_ptr<PdfParser> {
-        return std::make_unique<pdf_parser>(slice(begin, end));
+    auto make_pdf_parser(const char* begin, const char* end) -> unique_ptr<PdfParser> {
+        return make_unique<pdf_parser>(slice(begin, end));
     }
 
 }

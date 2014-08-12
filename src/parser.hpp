@@ -44,6 +44,7 @@ namespace pdf {
 
         auto next_object() -> variant;
         void expect_keyword(atom_type keyword);
+        auto expect_integer() -> int;
 
     private:
         slice input;

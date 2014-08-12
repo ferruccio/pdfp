@@ -18,7 +18,7 @@ namespace pdf {
 
     enum names : atom_type {
         _start_names_ = 2000, // not used
-        ID, Info, Root, Size
+        ID, Info, Prev, Root, Size
     };
 
 }
