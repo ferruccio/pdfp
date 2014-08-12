@@ -8,15 +8,19 @@ namespace pdf {
 
     class pdf_error : public std::runtime_error {
     public:
-        pdf_error(const char* what) : runtime_error(what) {}
+        pdf_error(const char* what) : std::runtime_error(what) {}
     };
 
-    struct IPdfParser {
-        virtual ~IPdfParser() {}
-
+    class format_error : public std::runtime_error {
+    public:
+        format_error(const char* what) : std::runtime_error(what) {}
     };
 
-    auto make_pdf_parser(const char* begin, const char* end) -> std::unique_ptr<IPdfParser>;
+    struct PdfParser {
+        virtual ~PdfParser() {}
+    };
+
+    auto make_pdf_parser(const char* begin, const char* end) -> std::unique_ptr<PdfParser>;
 
 }
 

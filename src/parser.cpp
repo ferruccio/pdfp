@@ -1,8 +1,11 @@
+#include "pdfp.hpp"
+
 #include "parser.hpp"
 #include "tools.hpp"
 
 namespace {
 
+    using pdf::format_error;
     using pdf::token;
     using pdf::token_type;
     using pdf::tools::slice;
@@ -205,7 +208,7 @@ namespace {
                         break;
                     } // fall through
                 case '+':
-                case '-': throw std::runtime_error("parse_number: invalid number");
+                case '-': throw format_error("parse_number: invalid number");
                 default:
                     value = value * 10 + (c - '0');
                     if (decimal) divisor *= 10.0;
@@ -222,14 +225,14 @@ namespace {
     */
     void generate_reference(std::vector<variant>& objects) {
         if (objects.size() < 2)
-            throw std::runtime_error("generate_reference: not enough objects");
+            throw format_error("generate_reference: not enough objects");
         auto gen = objects.back();
         if (!gen.is_integer())
-            throw std::runtime_error("generate_reference: gen is not an integer");
+            throw format_error("generate_reference: gen is not an integer");
         objects.pop_back();
         auto id = objects.back();
         if (!id.is_integer())
-            throw std::runtime_error("generate_reference: id is not an integer");
+            throw format_error("generate_reference: id is not an integer");
         objects.pop_back();
         objects.push_back(variant::make_ref(id.get_integer(), gen.get_integer()));
     }
@@ -243,7 +246,7 @@ namespace pdf {
         tie(tok, this->input) = next_token(this->input);
         switch (tok.type()) {
             case token_type::nothing: return variant();
-            case token_type::bad_token: throw std::runtime_error("next_object: invalid token");
+            case token_type::bad_token: throw format_error("parser::next_object: invalid token");
             case token_type::keyword:
                 switch (atoms[tok.value()]) {
                     case keywords::null: return variant::make_null();
@@ -256,19 +259,19 @@ namespace pdf {
             case token_type::hexstring: return variant::make_hexstring(tok.value());
             case token_type::number: return parse_number(tok.value());
             case token_type::array_begin: return parse_array();
-            case token_type::array_end: throw std::runtime_error("next_object: unexpected array end");
+            case token_type::array_end: throw format_error("parser::next_object: unexpected array end");
             case token_type::dict_begin: return parse_dict();
-            case token_type::dict_end: throw std::runtime_error("next_object: unexpected dict end");
-            default: throw std::runtime_error("next_object: unexpected error");
+            case token_type::dict_end: throw format_error("parser::next_object: unexpected dict end");
+            default: throw format_error("parser::next_object: unexpected error");
         }
     }
 
     void parser::expect_keyword(atom_type keyword) {
         variant kw = next_object();
         if (!kw.is_keyword())
-            throw std::runtime_error("expect_keyword: not a keyword");
+            throw format_error("parser::expect_keyword: not a keyword");
         if (kw.get_keyword() != keyword)
-            throw std::runtime_error("expect_keyword: unexpected keyword");
+            throw format_error("parser::expect_keyword: unexpected keyword");
     }
 
     void parser::parse_until(token_type type, std::vector<variant>& result) {
@@ -279,7 +282,7 @@ namespace pdf {
                 return;
             }
             if (tok.type() == token_type::nothing)
-                throw std::runtime_error("parse_until: unexpected end");
+                throw format_error("parser::parse_until: unexpected end");
             if (tok.type() == token_type::keyword && atoms[tok.value()] == keywords::R) {
                 generate_reference(result);
                 skip_token(tok);
@@ -305,7 +308,7 @@ namespace pdf {
             if (name == nullptr) {
                 name = &v;
                 if (!name->is_name())
-                    throw std::runtime_error("parse_dict: not a name");
+                    throw format_error("parser::parse_dict: not a name");
             } else {
                 d[name->get_name()] = v;
                 name = nullptr;

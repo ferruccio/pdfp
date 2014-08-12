@@ -55,7 +55,7 @@ namespace pdf { namespace tools {
         auto operator*() const noexcept -> char { return *_begin; }
 
         auto first() const -> char {
-            if (empty()) throw std::runtime_error("pdf::tools::slice::first() - empty slice");
+            if (empty()) throw std::runtime_error("slice::first: empty slice");
             return *_begin;
         }
 

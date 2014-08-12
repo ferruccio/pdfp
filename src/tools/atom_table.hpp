@@ -3,6 +3,8 @@
 
 #include <unordered_map>
 
+#include "../pdfp.hpp"
+
 namespace pdf { namespace tools {
 
     /*
@@ -28,7 +30,7 @@ namespace pdf { namespace tools {
         }
 
         void add(slice key, atom_type value) {
-            if (haskey(key)) throw std::runtime_error("pdf::tools::atom_table::add() - duplicate key");
+            if (haskey(key)) throw format_error("atom_table::add: duplicate key");
             table[key] = value;
         }
 

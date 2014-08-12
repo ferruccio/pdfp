@@ -9,11 +9,10 @@ namespace pdf {
     using tools::atom_table;
     using tools::slice;
 
-    class PdfParser : public IPdfParser {
+    class pdf_parser : public PdfParser {
     public:
-        PdfParser(slice pdf) : pdf(pdf) { init(); }
-
-        ~PdfParser() {}
+        pdf_parser(slice pdf) : pdf(pdf) { init(); }
+        ~pdf_parser() {}
 
     private:
         slice pdf;
@@ -42,8 +41,8 @@ namespace pdf {
         }
     };
 
-    auto make_pdf_parser(const char* begin, const char* end) -> std::unique_ptr<IPdfParser> {
-        return std::make_unique<PdfParser>(slice(begin, end));
+    auto make_pdf_parser(const char* begin, const char* end) -> std::unique_ptr<PdfParser> {
+        return std::make_unique<pdf_parser>(slice(begin, end));
     }
 
 }
