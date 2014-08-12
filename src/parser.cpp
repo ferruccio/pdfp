@@ -281,6 +281,13 @@ namespace pdf {
         return i.get_integer();
     }
 
+    auto parser::expect_dict() -> variant {
+        variant dict = next_object();
+        if (!dict.is_dict())
+            throw format_error("parser::expect_dict: not a dictionary");
+        return dict;
+    }
+
     void parser::parse_until(token_type type, std::vector<variant>& result) {
         for (;;) {
             auto tok = peek_token(this->input);

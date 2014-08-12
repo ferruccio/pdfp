@@ -35,15 +35,9 @@ namespace pdf {
 
         void process_trailer(slice input) {
             parser p(input, atoms);
-
             p.expect_keyword(keywords::trailer);
-            auto d = p.next_object();
-            if (!d.is_dict())
-                throw format_error("pdf_parser::process_trailer: no pdf dictionary");
-            trailer_dict trailer(d);
-
+            trailer_dict trailer(p.expect_dict());
             xref = make_unique<xref_table>(pdf, trailer.Size());
-
             p.expect_keyword(keywords::startxref);
             xref->get_from(p.expect_integer());
         }
