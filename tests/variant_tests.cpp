@@ -211,3 +211,43 @@ TEST_CASE("variant: << dict + atoms", "[variant]") {
     ss << v(t);
     CHECK(ss.str() == "<</Name (Charlie Brown) /Type @keyword /Value 100 0 R>>");
 }
+
+TEST_CASE("variant: copy constructor", "[variant]") {
+    variant i1 = variant::make_integer(12);
+    variant i2 { i1 };
+    CHECK(i1.is_integer(12));
+    CHECK(i2.is_integer(12));
+
+    variant r1 = variant::make_real(1.5);
+    variant r2 { r1 };
+    CHECK(r1.is_real(1.5));
+    CHECK(r2.is_real(1.5));
+
+    variant s1 = variant::make_string("(xyzzy)");
+    variant s2 { s1 };
+    CHECK(s1.is_string("(xyzzy)"));
+    CHECK(s2.is_string("(xyzzy)"));
+
+    variant a1 = variant::make_array();
+    auto& a1v = a1.get_array();
+    a1v.push_back(variant::make_integer(23));
+    variant a2 { a1 };
+    CHECK(a1.is_array());
+    CHECK(a2.is_array());
+    CHECK(a1.size() == 1);
+    CHECK(a2.size() == 1);
+    CHECK(a1[0].is_integer(23));
+    CHECK(a2[0].is_integer(23));
+
+    const atom_type key = 100;
+    variant d1 = variant::make_dict();
+    auto& d1m = d1.get_dict();
+    d1m[key] = variant::make_integer(215);
+    variant d2 { d1 };
+    CHECK(d1.is_dict());
+    CHECK(d2.is_dict());
+    CHECK(d1.size() == 1);
+    CHECK(d2.size() == 1);
+    CHECK(d1[key].is_integer(215));
+    CHECK(d2[key].is_integer(215));
+}

@@ -49,7 +49,7 @@ namespace pdf {
 
     private:
         slice input;
-        atom_table atoms;
+        atom_table atoms; // should be a const& but clang++ crashes
 
         void skip_token(token tok) noexcept {
             this->input = this->input.skip(tok.value());

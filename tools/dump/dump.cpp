@@ -28,7 +28,13 @@ int main(int argc, char **argv) {
     try {
         auto pp = pdf::make_pdf_parser(pdf.data(), pdf.data() + pdf.size());
     } catch (pdf::pdf_error& ex) {
-        cout << ex.what() << endl;
+        cout << "pdf::pdf_error> " << ex.what() << endl;
+    } catch (pdf::format_error& ex) {
+        cout << "pdf::format_error> " << ex.what() << endl;
+    } catch (std::runtime_error& ex) {
+        cout << "std::runtime_error> " << ex.what() << endl;
+    } catch (std::exception& ex) {
+        cout << "std::exception> " << ex.what() << endl;
     }
 
     return 0;

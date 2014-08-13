@@ -19,7 +19,7 @@ namespace pdf { namespace tools {
     };
 
     /*
-        variants are used to hold any PDF item
+        variants are used to hold any PDF object
     */
     class variant;
 
@@ -43,10 +43,26 @@ namespace pdf { namespace tools {
         variant() {}
         ~variant() { destroy(); }
 
-        variant(const variant& rhs) { *this = rhs; }
+        variant(const variant& rhs) {
+            switch (rhs.type()) {
+                case variant_type::array:
+                    _var.array = new array_type();
+                    _var.array->resize(rhs._var.array->size());
+                    std::copy(rhs._var.array->begin(), rhs._var.array->end(), _var.array->begin());
+                    _type = variant_type::array;
+                    break;
+                case variant_type::dict:
+                    _var.dict = new dict_type();
+                    _var.dict->insert(rhs._var.dict->begin(), rhs._var.dict->end());
+                    _type = variant_type::dict;
+                    break;
+                default:
+                    assign(rhs);
+                    break;
+            }
+        }
 
         variant(variant&& rhs) {
-            destroy();
             switch (rhs.type()) {
                 case variant_type::array:
                     _var.array = rhs._var.array;
