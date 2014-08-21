@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstring>
 #include <stdexcept>
 #include <functional>
 
@@ -16,15 +15,24 @@ namespace pdf { namespace tools {
     public:
         using cptr = const char*;
 
-        slice(const char* str) : _begin(str), _end(str + std::strlen(str)) {}
-
-        slice(cptr begin, cptr end) : _begin(begin), _end(end) {
-            assert(begin != nullptr);
-            assert(end != nullptr);
+        slice(const char* str) {
+            assert(str != nullptr);
+            _begin = _end = str;
+            while (*_end)
+                ++_end;
         }
 
-        slice(cptr begin, unsigned int length) : _begin(begin), _end(begin + length) {
+        slice(cptr begin, cptr end) {
             assert(begin != nullptr);
+            assert(end != nullptr);
+            _begin = begin;
+            _end = end;
+        }
+
+        slice(cptr begin, unsigned int length) {
+            assert(begin != nullptr);
+            _begin = begin;
+            _end = _begin + length;
         }
 
         slice(const slice& src) : _begin(src.begin()), _end(src.end()) {}
