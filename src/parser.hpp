@@ -1,6 +1,7 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
+#include <experimental/optional>
 #include <ostream>
 #include <tuple>
 #include <vector>
@@ -38,11 +39,13 @@ namespace pdf {
     auto peek_token(slice input) noexcept -> token;
     auto next_token(slice input) noexcept -> std::tuple<token, slice>;
 
+    using opt_variant = std::experimental::optional<variant>;
+
     class parser {
     public:
         parser(slice input, const atom_table& atoms) : input(input), atoms(atoms) {}
 
-        auto next_object() -> variant;
+        auto next_object() -> opt_variant;
         void expect_keyword(atom_type keyword);
         auto expect_integer() -> int;
         auto expect_dict() -> variant;

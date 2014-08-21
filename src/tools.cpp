@@ -10,7 +10,6 @@ namespace pdf { namespace tools {
 
     auto operator<<(std::ostream& os, variant v) -> std::ostream& {
         switch (v.type()) {
-            case variant_type::nothing: os << "*nothing*"; break;
             case variant_type::null: os << "null"; break;
             case variant_type::boolean: os << (v.get_boolean() ? "true" : "false"); break;
             case variant_type::integer: os << v.get_integer(); break;
@@ -55,7 +54,6 @@ namespace pdf { namespace tools {
     auto operator<<(std::ostream& os, variant_proxy vp) -> std::ostream& {
         auto& v = vp.var;
         switch (v.type()) {
-            case variant_type::nothing: os << "*nothing*"; break;
             case variant_type::null: os << "null"; break;
             case variant_type::boolean: os << (v.get_boolean() ? "true" : "false"); break;
             case variant_type::integer: os << v.get_integer(); break;

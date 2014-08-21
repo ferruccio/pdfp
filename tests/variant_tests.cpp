@@ -14,13 +14,10 @@ using std::string;
 
 TEST_CASE("variant: simple", "[variant]") {
     variant v;
-    CHECK(v.is_nothing());
+    CHECK(v.is_null());
 
     v = variant::make_null();
     CHECK(v.is_null());
-
-    v = variant::make_nothing();
-    CHECK(v.is_nothing());
 
     v = variant::make_boolean(true);
     CHECK(v.is_boolean());

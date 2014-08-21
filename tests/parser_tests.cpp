@@ -2,6 +2,7 @@
 #include "tools.hpp"
 #include "parser.hpp"
 
+#include <experimental/optional>
 #include <tuple>
 
 using pdf::tools::slice;
@@ -206,14 +207,14 @@ TEST_CASE("next_object: simple", "[parser]") {
 
     atom_table t;
     parser p(" null true false 1 2.5 (string) <deadbeef>", t);
-    CHECK(p.next_object().is_null());
-    CHECK(p.next_object().is_boolean(true));
-    CHECK(p.next_object().is_boolean(false));
-    CHECK(p.next_object().is_integer(1));
-    CHECK(p.next_object().is_real(2.5));
-    CHECK(p.next_object().is_string("(string)"));
-    CHECK(p.next_object().is_hexstring("<deadbeef>"));
-    CHECK(p.next_object().is_nothing());
+    CHECK(p.next_object()->is_null());
+    CHECK(p.next_object()->is_boolean(true));
+    CHECK(p.next_object()->is_boolean(false));
+    CHECK(p.next_object()->is_integer(1));
+    CHECK(p.next_object()->is_real(2.5));
+    CHECK(p.next_object()->is_string("(string)"));
+    CHECK(p.next_object()->is_hexstring("<deadbeef>"));
+    CHECK(!p.next_object());
 }
 
 TEST_CASE("next_object: array", "[parser]") {
@@ -221,9 +222,9 @@ TEST_CASE("next_object: array", "[parser]") {
 
     atom_table t;
     parser p(" [null true false 1 2.5 (string) <deadbeef>]", t);
-    auto o = p.next_object();
+    auto o = *p.next_object();
     CHECK(o.is_array());
-    CHECK(p.next_object().is_nothing());
+    CHECK(!p.next_object());
     auto& a = o.get_array();
     CHECK(a.size() == 7);
     CHECK(a[0].is_null());
@@ -240,9 +241,9 @@ TEST_CASE("next_object: nested array", "[parser]") {
 
     atom_table t;
     parser p(" [1 2 [3 4 5] 6 7]", t);
-    auto o = p.next_object();
+    auto o = *p.next_object();
     CHECK(o.is_array());
-    CHECK(p.next_object().is_nothing());
+    CHECK(!p.next_object());
     auto& a = o.get_array();
     CHECK(a.size() == 5);
     CHECK(a[0].is_integer(1));
@@ -262,7 +263,7 @@ TEST_CASE("next_object: dict", "[parser]") {
 
     atom_table t;
     parser p("<</Name (Fred) /Age 35 /Obj 10 20 R>>", t);
-    auto o = p.next_object();
+    auto o = *p.next_object();
     CHECK(o.is_dict());
     CHECK(o.size() == 3);
     CHECK(o[t["/Name"]].is_string("(Fred)"));
@@ -275,7 +276,7 @@ TEST_CASE("next_object: nested dict", "[parser]") {
 
     atom_table t;
     parser p("<</Name (Fred) /Vec [1 2 3] /Stuff <</Start 10 0 R /End 11 0 R>>>>", t);
-    auto o = p.next_object();
+    auto o = *p.next_object();
     CHECK(o.is_dict());
     CHECK(o[t["/Name"]].is_string("(Fred)"));
     CHECK(o[t["/Vec"]].is_array());

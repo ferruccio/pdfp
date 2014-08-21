@@ -241,51 +241,59 @@ namespace {
 
 namespace pdf {
 
-    auto parser::next_object() -> variant {
+    auto parser::next_object() -> opt_variant {
+        using std::experimental::make_optional;
+
         token tok;
         tie(tok, this->input) = next_token(this->input);
         switch (tok.type()) {
-            case token_type::nothing: return variant();
+            case token_type::nothing: return opt_variant();
             case token_type::bad_token: throw format_error("parser::next_object: invalid token");
             case token_type::keyword:
                 switch (atoms[tok.value()]) {
-                    case keywords::null: return variant::make_null();
-                    case keywords::_true: return variant::make_boolean(true);
-                    case keywords::_false: return variant::make_boolean(false);
-                    default: return variant::make_keyword(atoms[tok.value()]);
+                    case keywords::null: return make_optional(variant::make_null());
+                    case keywords::_true: return make_optional(variant::make_boolean(true));
+                    case keywords::_false: return make_optional(variant::make_boolean(false));
+                    default: return make_optional(variant::make_keyword(atoms[tok.value()]));
                 }
-            case token_type::name: return variant::make_name(atoms[tok.value()]);
-            case token_type::string: return variant::make_string(tok.value());
-            case token_type::hexstring: return variant::make_hexstring(tok.value());
-            case token_type::number: return parse_number(tok.value());
-            case token_type::array_begin: return parse_array();
+            case token_type::name: return make_optional(variant::make_name(atoms[tok.value()]));
+            case token_type::string: return make_optional(variant::make_string(tok.value()));
+            case token_type::hexstring: return make_optional(variant::make_hexstring(tok.value()));
+            case token_type::number: return make_optional(parse_number(tok.value()));
+            case token_type::array_begin: return make_optional(parse_array());
             case token_type::array_end: throw format_error("parser::next_object: unexpected array end");
-            case token_type::dict_begin: return parse_dict();
+            case token_type::dict_begin: return make_optional(parse_dict());
             case token_type::dict_end: throw format_error("parser::next_object: unexpected dict end");
             default: throw format_error("parser::next_object: unexpected error");
         }
     }
 
     void parser::expect_keyword(atom_type keyword) {
-        variant kw = next_object();
-        if (!kw.is_keyword())
+        auto kw = next_object();
+        if (!kw)
+            throw format_error("parser::expect_keyword: unexpected end");
+        if (!kw->is_keyword())
             throw format_error("parser::expect_keyword: not a keyword");
-        if (kw.get_keyword() != keyword)
+        if (kw->get_keyword() != keyword)
             throw format_error("parser::expect_keyword: unexpected keyword");
     }
 
     auto parser::expect_integer() -> int {
-        variant i = next_object();
-        if (!i.is_integer())
+        auto i = next_object();
+        if (!i)
+            throw format_error("parser::expect_keyword: unexpected end");
+        if (!i->is_integer())
             throw format_error("parser::expect_integer: not an integer");
-        return i.get_integer();
+        return i->get_integer();
     }
 
     auto parser::expect_dict() -> variant {
-        variant dict = next_object();
-        if (!dict.is_dict())
+        auto dict = next_object();
+        if (!dict)
+            throw format_error("parser::expect_dict: unexpected end");
+        if (!dict->is_dict())
             throw format_error("parser::expect_dict: not a dictionary");
-        return dict;
+        return *dict;
     }
 
     void parser::parse_until(token_type type, std::vector<variant>& result) {
@@ -301,7 +309,7 @@ namespace pdf {
                 generate_reference(result);
                 skip_token(tok);
             } else {
-                result.push_back(next_object());
+                result.push_back(*next_object());
             }
         }
     }

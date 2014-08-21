@@ -9,7 +9,6 @@
 namespace pdf { namespace tools {
 
     enum class variant_type {
-        nothing, // used to indicate "no object" vs. null which is a PDF null object
         null, keyword, boolean, integer, real, name, string, hexstring, array, dict, ref
     };
 
@@ -107,10 +106,6 @@ namespace pdf { namespace tools {
             return *this;
         }
 
-        static auto make_nothing() noexcept -> variant {
-            return variant(variant_type::nothing);
-        }
-
         static auto make_null() noexcept -> variant {
             return variant(variant_type::null);
         }
@@ -159,7 +154,6 @@ namespace pdf { namespace tools {
             return v;
         }
 
-        auto is_nothing() const noexcept -> bool { return _type == variant_type::nothing; }
         auto is_null() const noexcept -> bool { return _type == variant_type::null; }
         auto is_keyword() const noexcept -> bool { return _type == variant_type::keyword; }
         auto is_name() const noexcept -> bool { return _type == variant_type::name; }
@@ -304,12 +298,11 @@ namespace pdf { namespace tools {
                 case variant_type::dict: delete _var.dict; break;
                 default: break;
             }
-            _type = variant_type::nothing;
+            _type = variant_type::null;
         }
 
         void assign(const variant& rhs) {
             switch (rhs.type()) {
-                case variant_type::nothing: // fall through
                 case variant_type::null: break;
                 case variant_type::keyword: // fall through
                 case variant_type::name: _var.atom = rhs._var.atom; break;
@@ -325,7 +318,7 @@ namespace pdf { namespace tools {
             _type = rhs._type;
         }
 
-        variant_type _type = variant_type::nothing;
+        variant_type _type = variant_type::null;
         var _var;
     };
 
