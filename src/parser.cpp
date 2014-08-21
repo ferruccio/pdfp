@@ -127,7 +127,6 @@ namespace pdf {
     */
     auto operator<<(std::ostream& os, token_type tt) noexcept -> std::ostream& {
         switch (tt) {
-            case token_type::nothing: os << "nothing"; break;
             case token_type::bad_token: os << "bad_token"; break;
             case token_type::keyword: os << "keyword"; break;
             case token_type::name: os << "name"; break;
@@ -146,27 +145,28 @@ namespace pdf {
     /*
         Returns the first token in input.
     */
-    auto peek_token(slice input) noexcept -> token {
+    auto peek_token(slice input) noexcept -> opt_token {
         // skip over any whitespace and comments
         for (;;) {
             if ((input = skipws(input)).empty())
-                return token(token_type::nothing, input);
+                return opt_token();
             if (*input != '%')
                 break;
             input = input.skip_until(iseol);
         }
 
+        using std::experimental::make_optional;
         switch (*input) {
-            case '/': return name(input);
+            case '/': return make_optional(name(input));
             case '0': case '1': case '2': case '3': case '4':
             case '5': case '6': case '7': case '8': case '9':
             case '+': case '-': case '.': return number(input);
-            case '(': return string(input);
-            case '<': return lbrack(input);
-            case '>': return rbrack(input);
-            case '[': return token(token_type::array_begin, input.left(1));
-            case ']': return token(token_type::array_end, input.left(1));
-            default: return keyword(input);
+            case '(': return make_optional(string(input));
+            case '<': return make_optional(lbrack(input));
+            case '>': return make_optional(rbrack(input));
+            case '[': return make_optional(token(token_type::array_begin, input.left(1)));
+            case ']': return make_optional(token(token_type::array_end, input.left(1)));
+            default: return make_optional(keyword(input));
         }
     }
 
@@ -176,9 +176,9 @@ namespace pdf {
         By repeatedly calling next_token() and feeding the remainder slice back
         into it, we can extract all tokens in a slice.
     */
-    auto next_token(slice input) noexcept -> tuple<token, slice> {
+    auto next_token(slice input) noexcept -> tuple<opt_token, slice> {
         auto tok = peek_token(input);
-        return make_tuple(tok, input.skip(tok.value()));
+        return make_tuple(tok, input.skip(tok->value()));
     }
 
 }
@@ -244,22 +244,23 @@ namespace pdf {
     auto parser::next_object() -> opt_variant {
         using std::experimental::make_optional;
 
-        token tok;
+        opt_token tok;
         tie(tok, this->input) = next_token(this->input);
-        switch (tok.type()) {
-            case token_type::nothing: return opt_variant();
+        if (!tok)
+            return opt_variant();
+        switch (tok->type()) {
             case token_type::bad_token: throw format_error("parser::next_object: invalid token");
             case token_type::keyword:
-                switch (atoms[tok.value()]) {
+                switch (atoms[tok->value()]) {
                     case keywords::null: return make_optional(variant::make_null());
                     case keywords::_true: return make_optional(variant::make_boolean(true));
                     case keywords::_false: return make_optional(variant::make_boolean(false));
-                    default: return make_optional(variant::make_keyword(atoms[tok.value()]));
+                    default: return make_optional(variant::make_keyword(atoms[tok->value()]));
                 }
-            case token_type::name: return make_optional(variant::make_name(atoms[tok.value()]));
-            case token_type::string: return make_optional(variant::make_string(tok.value()));
-            case token_type::hexstring: return make_optional(variant::make_hexstring(tok.value()));
-            case token_type::number: return make_optional(parse_number(tok.value()));
+            case token_type::name: return make_optional(variant::make_name(atoms[tok->value()]));
+            case token_type::string: return make_optional(variant::make_string(tok->value()));
+            case token_type::hexstring: return make_optional(variant::make_hexstring(tok->value()));
+            case token_type::number: return make_optional(parse_number(tok->value()));
             case token_type::array_begin: return make_optional(parse_array());
             case token_type::array_end: throw format_error("parser::next_object: unexpected array end");
             case token_type::dict_begin: return make_optional(parse_dict());
@@ -299,15 +300,15 @@ namespace pdf {
     void parser::parse_until(token_type type, std::vector<variant>& result) {
         for (;;) {
             auto tok = peek_token(this->input);
-            if (tok.type() == type) {
-                skip_token(tok);
+            if (!tok)
+                throw format_error("parser::parse_until: unexpected end");
+            if (tok->type() == type) {
+                skip_token(*tok);
                 return;
             }
-            if (tok.type() == token_type::nothing)
-                throw format_error("parser::parse_until: unexpected end");
-            if (tok.type() == token_type::keyword && atoms[tok.value()] == keywords::R) {
+            if (tok->type() == token_type::keyword && atoms[tok->value()] == keywords::R) {
                 generate_reference(result);
-                skip_token(tok);
+                skip_token(*tok);
             } else {
                 result.push_back(*next_object());
             }

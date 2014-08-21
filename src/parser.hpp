@@ -16,7 +16,7 @@ namespace pdf {
     using tools::atom_type;
 
     enum class token_type {
-        nothing, bad_token,
+        bad_token,
         keyword, name, string, hexstring, number,
         array_begin, array_end, dict_begin, dict_end
     };
@@ -25,7 +25,6 @@ namespace pdf {
 
     class token {
     public:
-        token() : _type(token_type::nothing), _value(slice("")) {}
         token(token_type type, slice value) : _type(type), _value(value) {}
 
         auto type() const noexcept -> token_type { return _type; }
@@ -36,8 +35,10 @@ namespace pdf {
         slice _value;
     };
 
-    auto peek_token(slice input) noexcept -> token;
-    auto next_token(slice input) noexcept -> std::tuple<token, slice>;
+    using opt_token = std::experimental::optional<token>;
+
+    auto peek_token(slice input) noexcept -> opt_token;
+    auto next_token(slice input) noexcept -> std::tuple<opt_token, slice>;
 
     using opt_variant = std::experimental::optional<variant>;
 
