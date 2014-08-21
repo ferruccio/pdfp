@@ -15,7 +15,7 @@ namespace pdf { namespace tools {
     public:
         using cptr = const char*;
 
-        slice(const char* str) {
+        slice(cptr str) {
             assert(str != nullptr);
             _begin = _end = str;
             while (*_end)
@@ -23,8 +23,10 @@ namespace pdf { namespace tools {
         }
 
         slice(cptr begin, cptr end) {
-            assert(begin != nullptr);
+            // clang 3.5: This assertion fails on Linux when running unit tests, but works on OS X.
+            //assert(begin != nullptr);
             assert(end != nullptr);
+            assert(begin <= end);
             _begin = begin;
             _end = end;
         }
