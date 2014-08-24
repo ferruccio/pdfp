@@ -13,7 +13,7 @@ namespace pdf {
 
     enum keywords : atom_type {
         _start_keywords_ = 1000, // not used
-        _false, null, R, trailer, _true, startxref, xref
+        f, _false, n, null, R, trailer, _true, startxref, xref
     };
 
     enum names : atom_type {

@@ -7,14 +7,15 @@ namespace pdf {
     using tools::atom_type;
 
     /*
-        The pdf_atoms table is an immmutable atom_table used to initialize the
-        contents of a parser's atom_table with pre-defined PDF symbols.
+        The pdf_table contains pre-defined PDF symbols.
     */
 
     const std::unordered_map<slice, atom_type, tools::atom_table::hash> tools::atom_table::pdf_table {
 
         // keywords
+        { "f", keywords::f },
         { "false", keywords::_false },
+        { "n", keywords::n },
         { "null", keywords::null },
         { "R", keywords::R },
         { "trailer", keywords::trailer },

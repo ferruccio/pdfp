@@ -39,6 +39,10 @@ namespace pdf {
             auto dict = p.expect_dict();
             trailer_dict trailer(dict);
             xref = make_unique<xref_table>(pdf, trailer.Size());
+
+            int prev = trailer.Prev();
+            if (prev != 0)
+                xref->get_previous(prev);
             p.expect_keyword(keywords::startxref);
             xref->get_from(p.expect_integer());
         }

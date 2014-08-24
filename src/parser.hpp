@@ -50,6 +50,7 @@ namespace pdf {
         void expect_keyword(atom_type keyword);
         auto expect_integer() -> int;
         auto expect_dict() -> variant;
+        auto remainder() const noexcept -> slice { return input; }
 
     private:
         slice input;
